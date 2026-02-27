@@ -33,7 +33,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0f', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
 
-      {/* CSS Variables + Custom Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Bebas+Neue&display=swap');
 

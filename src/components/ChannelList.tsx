@@ -3,6 +3,7 @@ import { Channel, FilterOptions } from '../types';
 import { ChannelCard } from './ChannelCard';
 import { Search, SlidersHorizontal, Tv2, X, ChevronDown } from 'lucide-react';
 import { categories, countries } from '../data/channels';
+import { LiveMatches } from './Livematches';
 
 interface ChannelListProps {
   channels: Channel[];
@@ -33,6 +34,7 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0f', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
 
+      {/* CSS Variables + Custom Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Bebas+Neue&display=swap');
 
@@ -340,6 +342,14 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
 
           </div>
         </header>
+
+        {/* ── LIVE MATCHES ── */}
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 24px 0', position: 'relative', zIndex: 1 }}>
+          <LiveMatches onWatchChannel={(channelName: string) => {
+            const ch = channels.find(c => c.name.toLowerCase().includes(channelName.toLowerCase().split(' ')[0]));
+            if (ch) onChannelSelect(ch);
+          }} />
+        </div>
 
         {/* ── MAIN ── */}
         <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px 64px', position: 'relative', zIndex: 1 }}>

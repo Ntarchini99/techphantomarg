@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Channel } from '../types';
 import { ArrowLeft, Tv, Film, AlertCircle, MapPin, RefreshCw } from 'lucide-react';
 
@@ -7,16 +7,37 @@ interface VideoPlayerProps {
   onBack: () => void;
 }
 
+// Build alternative stream options for sports channels
+function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
+  // If it's a latamvidz1 sports stream, offer multiple servers
+  if (streamUrl.includes('latamvidz1.com/canal.php')) {
+    const match = streamUrl.match(/stream=([^&]+)/);
+    const stream = match ? match[1] : '';
+    return [
+      { label: 'Opción 1', url: `https://latamvidz1.com/canal.php?stream=${stream}` },
+      { label: 'Opción 2', url: `https://la14hd.com/vivo/canal.php?stream=${stream}` },
+      { label: 'Opción 3', url: `https://streamtpcloud.com/global1.php?stream=${stream}` },
+    ];
+  }
+  return [{ label: 'Principal', url: streamUrl }];
+}
+
 export function VideoPlayer({ channel, onBack }: VideoPlayerProps) {
+  const streamOptions = useMemo(() => getStreamOptions(channel.streamUrl), [channel]);
+  const [activeStream, setActiveStream] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const currentUrl = streamOptions[activeStream]?.url ?? channel.streamUrl;
 
   const handleIframeLoad = () => setLoading(false);
   const handleIframeError = () => { setLoading(false); setError(true); };
 
   const retry = () => { setError(false); setLoading(true); };
+  const switchStream = (i: number) => { setActiveStream(i); setError(false); setLoading(true); };
 
   const isLive = channel.type === 'tv';
+  const hasOptions = streamOptions.length > 1;
 
   return (
     <>
@@ -264,6 +285,45 @@ export function VideoPlayer({ channel, onBack }: VideoPlayerProps) {
         }
         .tip-text { font-size: 0.82rem; color: #666; line-height: 1.5; }
         .tip-text strong { color: #aaa; font-weight: 600; }
+
+        /* Stream selector */
+        .stream-selector {
+          max-width: 1200px;
+          margin: 0 auto 0;
+          padding: 14px 24px 0;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .stream-label {
+          font-size: 0.78rem;
+          color: #555;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          white-space: nowrap;
+        }
+        .stream-options {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .stream-opt {
+          padding: 7px 18px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.04);
+          color: #666;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.18s;
+          white-space: nowrap;
+        }
+        .stream-opt:hover { border-color: rgba(229,9,20,0.4); color: #ccc; background: rgba(229,9,20,0.06); }
+        .stream-opt.active { background: #e50914; border-color: #e50914; color: #fff; box-shadow: 0 4px 12px rgba(229,9,20,0.35); }
       `}</style>
 
       <div className="player-root">
@@ -320,8 +380,8 @@ export function VideoPlayer({ channel, onBack }: VideoPlayerProps) {
               )}
 
               <iframe
-                key={error ? 'error' : 'player'}
-                src={channel.streamUrl}
+                key={`${activeStream}-${error}`}
+                src={currentUrl}
                 allowFullScreen
                 allow="autoplay; encrypted-media; picture-in-picture"
                 onLoad={handleIframeLoad}
@@ -347,6 +407,24 @@ export function VideoPlayer({ channel, onBack }: VideoPlayerProps) {
               </div>
             </div>
           </div>
+
+          {/* Stream selector */}
+          {hasOptions && (
+            <div className="stream-selector">
+              <span className="stream-label">Servidores:</span>
+              <div className="stream-options">
+                {streamOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    className={`stream-opt ${activeStream === i ? 'active' : ''}`}
+                    onClick={() => switchStream(i)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Tip */}
           <div className="tip-bar">

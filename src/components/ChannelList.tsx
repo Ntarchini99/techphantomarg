@@ -269,7 +269,7 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
                 }}>
                   <Tv2 size={18} color="#fff" strokeWidth={2.5} />
                 </div>
-                <span className="logo-text">StreamTV</span>
+                <span className="logo-text">NazzStream</span>
               </div>
 
               {/* Search — grows */}

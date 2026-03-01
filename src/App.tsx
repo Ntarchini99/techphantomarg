@@ -116,8 +116,8 @@ function App() {
         `}</style>
 
         <div className="splash">
-          <div className="splash-logo">StreamTV</div>
-          <div className="splash-sub">Preparando tu contenido</div>
+          <div className="splash-logo">NazzStream</div>
+          <div className="splash-sub">Cargando contenido</div>
           <div className="progress-wrap">
             <div className="progress-track">
               <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />

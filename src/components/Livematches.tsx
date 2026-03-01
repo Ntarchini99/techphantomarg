@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Activity, Clock, ChevronRight, RefreshCw, Tv, Wifi } from 'lucide-react';
+import { Activity, Clock, ChevronRight, RefreshCw, Tv, Wifi, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ── ESPN Public API — no key needed ──────────────────────────────────────────
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
@@ -16,6 +16,20 @@ const LEAGUES = [
   { slug: 'ita.1',           name: 'Serie A',           flag: '🇮🇹', channel: 'ESPN 3'       },
   { slug: 'fra.1',           name: 'Ligue 1',           flag: '🇫🇷', channel: 'ESPN 3'       },
 ];
+
+const INITIAL_VISIBLE = 2;
+
+// ── Channel logo URLs — mismas que channels.ts (Wikimedia Commons) ───────────
+const T = (ab: string, file: string) =>
+  `https://upload.wikimedia.org/wikipedia/commons/thumb/${ab[0]}/${ab}/${file}/300px-${file}.png`;
+
+const CHANNEL_LOGOS: Record<string, string> = {
+  'ESPN':         T('2f', 'ESPN_wordmark.svg'),
+  'ESPN 2':       T('8b', 'Espn2.svg'),
+  'ESPN 3':       T('5e', 'ESPN3_logo.svg'),
+  'ESPN Premium': T('f5', 'ESPN_Premium_logo.svg'),
+  'TNT Sports':   T('4b', 'TNT_Sports_2020_logo.svg'),
+};
 
 interface Match {
   id: string;
@@ -44,7 +58,6 @@ function parseEvents(events: any[], league: typeof LEAGUES[0]): Match[] {
     if (status?.completed) matchStatus = 'finished';
     else if (status?.state === 'in') matchStatus = 'live';
 
-    // Format local time
     let timeStr = '--:--';
     try {
       const d = new Date(e.date);
@@ -69,34 +82,37 @@ function parseEvents(events: any[], league: typeof LEAGUES[0]): Match[] {
   });
 }
 
-// ── Match Card ────────────────────────────────────────────────────────────────
+// ── Team Logo ─────────────────────────────────────────────────────────────────
 function TeamLogo({ src, name }: { src: string; name: string }) {
   const [err, setErr] = useState(false);
   if (!src || err) return <span className="logo-fallback">{name[0]}</span>;
   return <img src={src} alt={name} className="team-logo" onError={() => setErr(true)} />;
 }
 
+// ── Match Card ────────────────────────────────────────────────────────────────
 function MatchCard({ match, onWatchClick }: { match: Match; onWatchClick: (m: Match) => void }) {
   const hasScore = match.homeScore !== '' && match.awayScore !== '';
 
   return (
     <div className={`match-card match-${match.status}`}>
-      {/* Top */}
       <div className="match-top">
         <span className="match-league">{match.flag} {match.league}</span>
+      </div>
+
+      {/* Status row — shown above the score */}
+      <div className="match-status-row">
         {match.status === 'live' && (
-          <span className="live-badge">
+          <span className="live-badge-lg">
             <span className="live-dot-sm" />
-            {match.clock || 'EN VIVO'}
+            {match.clock ? `${match.clock}` : 'EN VIVO'}
           </span>
         )}
-        {match.status === 'finished' && <span className="finished-badge">Final</span>}
+        {match.status === 'finished' && <span className="finished-badge-lg">⏹ Partido finalizado</span>}
         {match.status === 'upcoming' && (
-          <span className="time-badge"><Clock size={10} />{match.time}</span>
+          <span className="upcoming-badge-lg"><Clock size={11} />Comienza a las {match.time}</span>
         )}
       </div>
 
-      {/* Teams */}
       <div className="match-body">
         <div className="match-team home">
           <span className="team-name">{match.homeTeam}</span>
@@ -115,10 +131,14 @@ function MatchCard({ match, onWatchClick }: { match: Match; onWatchClick: (m: Ma
         </div>
       </div>
 
-      {/* Watch */}
       {match.status !== 'finished' && (
         <button className="watch-btn" onClick={() => onWatchClick(match)}>
-          <Tv size={11} />{match.channel}<ChevronRight size={11} />
+          <Tv size={11} />
+          {CHANNEL_LOGOS[match.channel]
+            ? <img src={CHANNEL_LOGOS[match.channel]} alt={match.channel} className="channel-logo" />
+            : <span>{match.channel}</span>
+          }
+          <ChevronRight size={11} />
         </button>
       )}
     </div>
@@ -136,6 +156,7 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
   const [error,     setError]     = useState(false);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
   const [filter,    setFilter]    = useState<'live' | 'all'>('all');
+  const [expanded,  setExpanded]  = useState(false);
 
   const fetchMatches = useCallback(async () => {
     setLoading(true); setError(false);
@@ -157,7 +178,6 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         })
       );
 
-      // Sort: live → upcoming → finished, then by time
       all.sort((a, b) => {
         const order = { live: 0, upcoming: 1, finished: 2 };
         if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
@@ -179,8 +199,17 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
     return () => clearInterval(iv);
   }, [fetchMatches]);
 
+  // Reset expanded state when filter changes
+  useEffect(() => {
+    setExpanded(false);
+  }, [filter]);
+
   const liveMatches = matches.filter(m => m.status === 'live');
   const displayed   = filter === 'live' ? liveMatches : matches;
+
+  const visibleMatches  = expanded ? displayed : displayed.slice(0, INITIAL_VISIBLE);
+  const hiddenCount     = displayed.length - INITIAL_VISIBLE;
+  const hasMore         = displayed.length > INITIAL_VISIBLE;
 
   return (
     <>
@@ -240,12 +269,7 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         .refresh-btn.spinning svg { animation: lmspin 0.8s linear infinite; }
         @keyframes lmspin { to { transform: rotate(360deg); } }
 
-        .lm-body {
-          max-height: 400px; overflow-y: auto;
-          scrollbar-width: thin; scrollbar-color: rgba(229,9,20,0.3) transparent;
-        }
-        .lm-body::-webkit-scrollbar { width: 3px; }
-        .lm-body::-webkit-scrollbar-thumb { background: rgba(229,9,20,0.3); border-radius: 2px; }
+        .lm-body { overflow: hidden; }
 
         .match-card {
           padding: 10px 16px;
@@ -276,6 +300,27 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         }
         .finished-badge { font-size: 0.62rem; color: #444; font-weight: 600; }
         .time-badge { display: flex; align-items: center; gap: 3px; font-size: 0.65rem; color: #555; white-space: nowrap; }
+
+        /* Prominent status row above score */
+        .match-status-row {
+          display: flex; justify-content: center; align-items: center;
+          margin-bottom: 8px;
+        }
+        .live-badge-lg {
+          display: inline-flex; align-items: center; gap: 5px;
+          background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.35);
+          color: #ff4444; font-size: 0.72rem; font-weight: 700;
+          padding: 3px 10px; border-radius: 20px; letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .finished-badge-lg {
+          font-size: 0.68rem; color: #3a3a3a; font-weight: 600;
+          letter-spacing: 0.04em;
+        }
+        .upcoming-badge-lg {
+          display: inline-flex; align-items: center; gap: 4px;
+          font-size: 0.68rem; color: #4a4a5a; font-weight: 500;
+        }
 
         .match-body { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
         .match-team { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -309,6 +354,37 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
           padding: 4px 10px; cursor: pointer; transition: all 0.15s;
         }
         .watch-btn:hover { background: rgba(229,9,20,0.14); color: #ff5555; }
+        .channel-logo {
+          height: 16px; width: auto; max-width: 72px;
+          object-fit: contain;
+          opacity: 0.85;
+          transition: opacity 0.15s;
+        }
+        .watch-btn:hover .channel-logo { opacity: 1; }
+
+        /* Collapsible extra matches */
+        .extra-matches {
+          overflow: hidden;
+          max-height: 0;
+          transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .extra-matches.open {
+          max-height: 2000px;
+          transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Expand toggle in header */
+        .expand-toggle-header {
+          display: flex; align-items: center; gap: 3px;
+          padding: 4px 9px; border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: none; color: #555;
+          font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 600;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          cursor: pointer; transition: all 0.15s; white-space: nowrap;
+        }
+        .expand-toggle-header:hover { color: #ccc; border-color: rgba(255,255,255,0.18); }
+        .expand-toggle-header svg { transition: transform 0.2s; }
 
         .lm-state { padding: 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .lm-spinner {
@@ -344,6 +420,12 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
                 Todos <span className="pill-count">{matches.length}</span>
               </button>
             </div>
+            {hasMore && (
+              <button className="expand-toggle-header" onClick={() => setExpanded(prev => !prev)} title={expanded ? 'Ver menos' : `Ver ${hiddenCount} más`}>
+                {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                <span>{expanded ? 'Ver menos' : `+${hiddenCount}`}</span>
+              </button>
+            )}
             <button className={`refresh-btn ${loading ? 'spinning' : ''}`} onClick={fetchMatches} title="Actualizar">
               <RefreshCw size={12} />
             </button>
@@ -369,13 +451,29 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
               <p>{filter === 'live' ? 'No hay partidos en vivo ahora' : 'No hay partidos programados hoy'}</p>
             </div>
           ) : (
-            displayed.map(m => (
-              <MatchCard
-                key={m.id}
-                match={m}
-                onWatchClick={(match) => onWatchChannel?.(match.channel)}
-              />
-            ))
+            <>
+              {/* Always-visible first 2 */}
+              {visibleMatches.slice(0, INITIAL_VISIBLE).map(m => (
+                <MatchCard
+                  key={m.id}
+                  match={m}
+                  onWatchClick={(match) => onWatchChannel?.(match.channel)}
+                />
+              ))}
+
+              {/* Collapsible rest */}
+              {hasMore && (
+                <div className={`extra-matches ${expanded ? 'open' : ''}`}>
+                  {displayed.slice(INITIAL_VISIBLE).map(m => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      onWatchClick={(match) => onWatchChannel?.(match.channel)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 

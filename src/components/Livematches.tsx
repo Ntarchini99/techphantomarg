@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, Clock, ChevronRight, RefreshCw, Tv, Wifi, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ── ESPN Public API — no key needed ──────────────────────────────────────────
@@ -19,16 +19,16 @@ const LEAGUES = [
 
 const INITIAL_VISIBLE = 2;
 
-// ── Channel logo URLs — mismas que channels.ts (Wikimedia Commons) ───────────
-const T = (ab: string, file: string) =>
-  `https://upload.wikimedia.org/wikipedia/commons/thumb/${ab[0]}/${ab}/${file}/300px-${file}.png`;
+// ── Channel logo URLs — via Special:FilePath (sin hash MD5) ──────────────────
+const W = (file: string) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${file}`;
 
 const CHANNEL_LOGOS: Record<string, string> = {
-  'ESPN':         T('2f', 'ESPN_wordmark.svg'),
-  'ESPN 2':       T('8b', 'Espn2.svg'),
-  'ESPN 3':       T('5e', 'ESPN3_logo.svg'),
-  'ESPN Premium': T('f5', 'ESPN_Premium_logo.svg'),
-  'TNT Sports':   T('4b', 'TNT_Sports_2020_logo.svg'),
+  'ESPN':         W('ESPN_wordmark.svg'),
+  'ESPN 2':       W('ESPN2_logo.svg'),
+  'ESPN 3':       W('ESPN3_logo.svg'),
+  'ESPN Premium': W('ESPN_Premium_logo.svg'),
+  'TNT Sports':   W('TNT_Sports_2020_logo.svg'),
 };
 
 interface Match {
@@ -483,6 +483,53 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
             {' · '}Se actualiza cada 60s
           </div>
         )}
+      </div>
+    </>
+  );
+}
+
+// ── AppLayout — coloca el contenido principal a la izquierda y LiveMatches como sidebar derecho ──
+export function AppLayout({
+  children,
+  onWatchChannel,
+}: {
+  children: React.ReactNode;
+  onWatchChannel?: (channelName: string) => void;
+}) {
+  return (
+    <>
+      <style>{`
+        .app-layout {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          width: 100%;
+        }
+        .app-layout__main {
+          flex: 1;
+          min-width: 0;
+        }
+        .app-layout__sidebar {
+          width: 276px;
+          flex-shrink: 0;
+          position: sticky;
+          top: 12px;
+        }
+        @media (max-width: 820px) {
+          .app-layout {
+            flex-direction: column;
+          }
+          .app-layout__sidebar {
+            width: 100%;
+            position: static;
+          }
+        }
+      `}</style>
+      <div className="app-layout">
+        <div className="app-layout__main">{children}</div>
+        <div className="app-layout__sidebar">
+          <LiveMatches onWatchChannel={onWatchChannel} />
+        </div>
       </div>
     </>
   );

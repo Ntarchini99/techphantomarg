@@ -3,7 +3,7 @@ import { Channel, FilterOptions } from '../types';
 import { ChannelCard } from './ChannelCard';
 import { Search, SlidersHorizontal, Tv2, X, ChevronDown } from 'lucide-react';
 import { categories, countries } from '../data/channels';
-import { LiveMatches } from './Livematches';
+import { AppLayout } from './Livematches';
 
 interface ChannelListProps {
   channels: Channel[];
@@ -31,10 +31,16 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
 
   const hasActiveFilters = filters.category !== 'Todas' || filters.country !== 'Todos' || filters.search !== '';
 
+  // Handler para cuando se hace clic en "Ver canal" desde LiveMatches
+  const handleWatchChannel = (channelName: string) => {
+    const ch = channels.find(c =>
+      c.name.toLowerCase().includes(channelName.toLowerCase().split(' ')[0])
+    );
+    if (ch) onChannelSelect(ch);
+  };
+
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0f', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-
-      {/* CSS Variables + Custom Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Bebas+Neue&display=swap');
 
@@ -51,14 +57,12 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
 
         .streamtv-root * { box-sizing: border-box; }
 
-        /* Header blur + border */
         .header-bar {
           background: linear-gradient(180deg, rgba(10,10,15,0.98) 0%, rgba(10,10,15,0.85) 100%);
           backdrop-filter: blur(20px);
           border-bottom: 1px solid var(--border);
         }
 
-        /* Logo */
         .logo-text {
           font-family: 'Bebas Neue', cursive;
           font-size: 2rem;
@@ -70,11 +74,7 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           line-height: 1;
         }
 
-        /* Search */
-        .search-wrap {
-          position: relative;
-          transition: all 0.3s ease;
-        }
+        .search-wrap { position: relative; transition: all 0.3s ease; }
         .search-input {
           width: 100%;
           background: rgba(255,255,255,0.05);
@@ -94,7 +94,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           box-shadow: 0 0 0 3px rgba(229,9,20,0.12);
         }
 
-        /* Filter drawer */
         .filter-drawer {
           overflow: hidden;
           transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
@@ -102,7 +101,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
         .filter-drawer.open { max-height: 200px; opacity: 1; }
         .filter-drawer.closed { max-height: 0; opacity: 0; }
 
-        /* Select */
         .styled-select {
           appearance: none;
           background: rgba(255,255,255,0.04);
@@ -123,14 +121,12 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
         }
         .styled-select option { background: #1c1c24; color: #f0f0f0; }
 
-        /* Select wrapper */
         .select-wrap { position: relative; }
         .select-wrap svg {
           position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
           pointer-events: none; color: #555;
         }
 
-        /* Filter toggle btn */
         .filter-btn {
           display: flex; align-items: center; gap: 6px;
           background: rgba(255,255,255,0.05);
@@ -155,7 +151,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           margin-left: 2px;
         }
 
-        /* Section heading */
         .section-heading {
           font-family: 'Bebas Neue', cursive;
           font-size: 1.6rem;
@@ -170,14 +165,12 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           text-transform: uppercase;
         }
 
-        /* Channel grid */
         .channel-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
           gap: 16px;
         }
 
-        /* Ambient glow behind hero area */
         .ambient-glow {
           position: fixed;
           top: -200px;
@@ -190,12 +183,7 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           z-index: 0;
         }
 
-        /* Empty state */
-        .empty-state {
-          text-align: center;
-          padding: 80px 20px;
-          color: var(--muted);
-        }
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--muted); }
         .empty-icon {
           width: 80px; height: 80px;
           background: rgba(255,255,255,0.03);
@@ -205,7 +193,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           margin: 0 auto 20px;
         }
 
-        /* Clear search btn */
         .clear-btn {
           position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
           background: none; border: none; cursor: pointer;
@@ -215,7 +202,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
         }
         .clear-btn:hover { color: #aaa; }
 
-        /* Category pills */
         .pill-bar {
           display: flex; gap: 8px;
           overflow-x: auto;
@@ -244,7 +230,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           font-weight: 600;
         }
 
-        /* Divider */
         .divider { height: 1px; background: var(--border); }
       `}</style>
 
@@ -255,29 +240,16 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
         <header className="header-bar sticky top-0 z-50">
           <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px' }}>
 
-            {/* Top row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 0 14px' }}>
-
-              {/* Logo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 8 }}>
-                <div style={{
-                  background: 'var(--red)',
-                  borderRadius: 6,
-                  padding: '5px 6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
+                <div style={{ background: 'var(--red)', borderRadius: 6, padding: '5px 6px', display: 'flex', alignItems: 'center' }}>
                   <Tv2 size={18} color="#fff" strokeWidth={2.5} />
                 </div>
                 <span className="logo-text">NazzStream</span>
               </div>
 
-              {/* Search — grows */}
               <div className="search-wrap" style={{ flex: 1, maxWidth: 480 }}>
-                <Search
-                  size={16}
-                  style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#555', zIndex: 1 }}
-                />
+                <Search size={16} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#555', zIndex: 1 }} />
                 <input
                   className="search-input"
                   type="text"
@@ -292,7 +264,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
                 )}
               </div>
 
-              {/* Filter toggle */}
               <button
                 className={`filter-btn ${showFilters ? 'active' : ''}`}
                 onClick={() => setShowFilters(v => !v)}
@@ -305,7 +276,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
               </button>
             </div>
 
-            {/* Category pills */}
             <div className="pill-bar" style={{ paddingBottom: 14 }}>
               {categories.map(cat => (
                 <button
@@ -318,7 +288,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
               ))}
             </div>
 
-            {/* Expandable country filter */}
             <div className={`filter-drawer ${showFilters ? 'open' : 'closed'}`}>
               <div className="divider" style={{ marginBottom: 14 }} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, paddingBottom: 16 }}>
@@ -343,50 +312,45 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
           </div>
         </header>
 
-        {/* ── LIVE MATCHES ── */}
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 24px 0', position: 'relative', zIndex: 1 }}>
-          <LiveMatches onWatchChannel={(channelName: string) => {
-            const ch = channels.find(c => c.name.toLowerCase().includes(channelName.toLowerCase().split(' ')[0]));
-            if (ch) onChannelSelect(ch);
-          }} />
-        </div>
+        {/* ── MAIN con sidebar ── */}
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '28px 24px 64px', position: 'relative', zIndex: 1 }}>
+          <AppLayout onWatchChannel={handleWatchChannel}>
 
-        {/* ── MAIN ── */}
-        <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px 64px', position: 'relative', zIndex: 1 }}>
+            {/* Contador */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 24 }}>
+              <h2 className="section-heading">
+                {filters.search
+                  ? `Resultados para "${filters.search}"`
+                  : filters.category !== 'Todas'
+                    ? filters.category
+                    : 'En Emisión'}
+              </h2>
+              <span className="section-count">{filteredChannels.length} canales</span>
+            </div>
 
-          {/* Count row */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 24 }}>
-            <h2 className="section-heading">
-              {filters.search
-                ? `Resultados para "${filters.search}"`
-                : filters.category !== 'Todas'
-                  ? filters.category
-                  : 'En Emisión'}
-            </h2>
-            <span className="section-count">{filteredChannels.length} canales</span>
-          </div>
-
-          {/* Grid or empty */}
-          {filteredChannels.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <Search size={28} style={{ color: '#444' }} />
+            {/* Grid o vacío */}
+            {filteredChannels.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <Search size={28} style={{ color: '#444' }} />
+                </div>
+                <p style={{ fontSize: '1rem', marginBottom: 6, color: '#666' }}>Sin resultados</p>
+                <p style={{ fontSize: '0.85rem', color: '#444' }}>Intenta con otros términos o ajusta los filtros</p>
               </div>
-              <p style={{ fontSize: '1rem', marginBottom: 6, color: '#666' }}>Sin resultados</p>
-              <p style={{ fontSize: '0.85rem', color: '#444' }}>Intenta con otros términos o ajusta los filtros</p>
-            </div>
-          ) : (
-            <div className="channel-grid">
-              {filteredChannels.map(channel => (
-                <ChannelCard
-                  key={channel.id}
-                  channel={channel}
-                  onClick={() => onChannelSelect(channel)}
-                />
-              ))}
-            </div>
-          )}
-        </main>
+            ) : (
+              <div className="channel-grid">
+                {filteredChannels.map(channel => (
+                  <ChannelCard
+                    key={channel.id}
+                    channel={channel}
+                    onClick={() => onChannelSelect(channel)}
+                  />
+                ))}
+              </div>
+            )}
+
+          </AppLayout>
+        </div>
       </div>
     </div>
   );

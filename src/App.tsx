@@ -9,68 +9,359 @@ function App() {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<'logo' | 'loading'>('logo');
 
   useEffect(() => {
+    // Show logo for 1.8s then transition to loading bar
+    const logoTimer = setTimeout(() => setPhase('loading'), 1800);
+
     const interval = setInterval(() => {
       setProgress(p => {
         if (p >= 90) { clearInterval(interval); return p; }
-        return p + Math.random() * 18;
+        return p + Math.random() * 15;
       });
-    }, 120);
+    }, 140);
 
     const load = async () => {
-      await new Promise(resolve => setTimeout(resolve, 900));
+      await new Promise(resolve => setTimeout(resolve, 2800));
       setChannels(channelsData);
       setProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await new Promise(resolve => setTimeout(resolve, 350));
       setLoading(false);
     };
 
     load();
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); clearTimeout(logoTimer); };
   }, []);
 
   if (loading) {
     return (
       <>
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+
           .splash {
-            min-height: 100vh; background: #0a0a0f;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden;
+            min-height: 100vh;
+            background: #060608;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            position: relative;
+            overflow: hidden;
           }
+
+          /* ── Animated grid background ── */
           .splash::before {
-            content: ''; position: absolute; top: -30%; left: 50%; transform: translateX(-50%);
-            width: 600px; height: 400px;
-            background: radial-gradient(ellipse, rgba(229,9,20,0.12) 0%, transparent 70%);
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+              linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+            animation: gridpan 12s linear infinite;
+          }
+          @keyframes gridpan {
+            0% { background-position: 0 0; }
+            100% { background-position: 48px 48px; }
+          }
+
+          /* ── Central glow orb ── */
+          .glow-orb {
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,200,255,0.08) 0%, rgba(0,100,200,0.06) 40%, transparent 70%);
+            pointer-events: none;
+            animation: orb-breathe 3s ease-in-out infinite;
+          }
+          @keyframes orb-breathe {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+          }
+
+          /* ── Corner scanlines ── */
+          .scanlines {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 3px,
+              rgba(0,0,0,0.08) 3px,
+              rgba(0,0,0,0.08) 4px
+            );
             pointer-events: none;
           }
-          .splash-logo {
-            font-family: 'Bebas Neue', cursive; font-size: clamp(3rem, 8vw, 5rem);
-            letter-spacing: 0.1em;
-            background: linear-gradient(135deg, #fff 0%, #e50914 55%, #ff6b6b 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            margin-bottom: 8px; animation: fadein 0.5s ease;
+
+          /* ── Logo container ── */
+          .logo-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
           }
-          .splash-sub {
-            font-size: 0.85rem; color: #444; letter-spacing: 0.12em; text-transform: uppercase;
-            margin-bottom: 52px; animation: fadein 0.5s ease 0.1s both;
+
+          /* ── Logo image with hex clip ── */
+          .logo-img-wrap {
+            position: relative;
+            width: 140px; height: 140px;
+            animation: logo-appear 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
           }
-          .progress-wrap { width: min(320px, 70vw); animation: fadein 0.5s ease 0.2s both; }
-          .progress-track { height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; margin-bottom: 14px; }
-          .progress-fill { height: 100%; background: #e50914; border-radius: 2px; transition: width 0.15s ease; box-shadow: 0 0 8px rgba(229,9,20,0.6); }
-          .progress-label { text-align: center; font-size: 0.75rem; color: #444; letter-spacing: 0.06em; }
-          @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes logo-appear {
+            from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0deg); }
+          }
+
+          .logo-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,200,255,0.4);
+            animation: ring-spin 4s linear infinite;
+          }
+          .logo-ring::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: 50%;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #00c8ff;
+            transform: translateX(-50%);
+            box-shadow: 0 0 12px #00c8ff, 0 0 24px rgba(0,200,255,0.5);
+          }
+          @keyframes ring-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+
+          .logo-ring-2 {
+            position: absolute;
+            inset: -18px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,200,255,0.15);
+            animation: ring-spin 8s linear infinite reverse;
+          }
+          .logo-ring-2::before {
+            content: '';
+            position: absolute;
+            bottom: -3px; left: 50%;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: rgba(0,200,255,0.6);
+            transform: translateX(-50%);
+            box-shadow: 0 0 8px rgba(0,200,255,0.8);
+          }
+
+          .logo-img {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(0,200,255,0.3);
+            box-shadow:
+              0 0 30px rgba(0,200,255,0.2),
+              0 0 60px rgba(0,100,200,0.15),
+              inset 0 0 20px rgba(0,0,0,0.5);
+          }
+
+          /* ── Glitch pulse on logo ── */
+          .logo-img-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(0,200,255,0.08);
+            animation: logo-pulse 2s ease-in-out infinite 0.3s;
+          }
+          @keyframes logo-pulse {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.08); }
+          }
+
+          /* ── Brand name ── */
+          .brand-name {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(2.5rem, 7vw, 4.2rem);
+            letter-spacing: 0.18em;
+            color: #f0f8ff;
+            position: relative;
+            animation: name-appear 0.5s ease 0.3s both;
+            text-shadow:
+              0 0 20px rgba(0,200,255,0.4),
+              0 0 40px rgba(0,100,200,0.2);
+          }
+          @keyframes name-appear {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+
+          /* Cyan accent on first word */
+          .brand-name .accent { color: #00c8ff; }
+
+          .brand-tagline {
+            font-size: 0.72rem;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: rgba(0,200,255,0.5);
+            font-weight: 500;
+            animation: name-appear 0.5s ease 0.45s both;
+          }
+
+          /* ── Loading phase ── */
+          .loading-section {
+            margin-top: 48px;
+            width: min(340px, 75vw);
+            animation: name-appear 0.4s ease 0.6s both;
+          }
+
+          .loading-section.hidden {
+            opacity: 0;
+            pointer-events: none;
+          }
+
+          .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+          }
+          .progress-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(0,200,255,0.4);
+            font-weight: 600;
+          }
+          .progress-pct {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(0,200,255,0.6);
+            letter-spacing: 0.05em;
+          }
+
+          .progress-track {
+            height: 2px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: visible;
+            position: relative;
+          }
+          .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #00c8ff);
+            border-radius: 2px;
+            transition: width 0.2s ease;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,200,255,0.8), 0 0 20px rgba(0,200,255,0.4);
+          }
+          .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -1px; top: 50%;
+            transform: translateY(-50%);
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #00c8ff;
+            box-shadow: 0 0 8px #00c8ff, 0 0 16px rgba(0,200,255,0.6);
+          }
+
+          /* ── Floating particles ── */
+          .particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+          }
+          .particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            border-radius: 50%;
+            background: rgba(0,200,255,0.6);
+            animation: float-up linear infinite;
+          }
+          @keyframes float-up {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(var(--drift, 20px)); opacity: 0; }
+          }
+
+          /* ── Corner decorations ── */
+          .corner { position: absolute; width: 40px; height: 40px; }
+          .corner-tl { top: 24px; left: 24px; border-top: 1px solid rgba(0,200,255,0.3); border-left: 1px solid rgba(0,200,255,0.3); }
+          .corner-tr { top: 24px; right: 24px; border-top: 1px solid rgba(0,200,255,0.3); border-right: 1px solid rgba(0,200,255,0.3); }
+          .corner-bl { bottom: 24px; left: 24px; border-bottom: 1px solid rgba(0,200,255,0.3); border-left: 1px solid rgba(0,200,255,0.3); }
+          .corner-br { bottom: 24px; right: 24px; border-bottom: 1px solid rgba(0,200,255,0.3); border-right: 1px solid rgba(0,200,255,0.3); }
         `}</style>
+
         <div className="splash">
-          <div className="splash-logo">NazzStream</div>
-          <div className="splash-sub">Cargando contenido</div>
-          <div className="progress-wrap">
-            <div className="progress-track">
-              <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+          {/* BG effects */}
+          <div className="glow-orb" />
+          <div className="scanlines" />
+
+          {/* Floating particles */}
+          <div className="particles">
+            {Array.from({ length: 18 }).map((_, i) => (
+              <div
+                key={i}
+                className="particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  bottom: `${Math.random() * 20}%`,
+                  animationDuration: `${4 + Math.random() * 8}s`,
+                  animationDelay: `${Math.random() * 6}s`,
+                  width: `${1 + Math.random() * 2}px`,
+                  height: `${1 + Math.random() * 2}px`,
+                  opacity: 0.3 + Math.random() * 0.5,
+                  ['--drift' as any]: `${(Math.random() - 0.5) * 60}px`,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Corner decorations */}
+          <div className="corner corner-tl" />
+          <div className="corner corner-tr" />
+          <div className="corner corner-bl" />
+          <div className="corner corner-br" />
+
+          {/* Logo + Brand */}
+          <div className="logo-container">
+            <div className="logo-img-wrap">
+              <div className="logo-ring" />
+              <div className="logo-ring-2" />
+              <img
+                className="logo-img"
+                src="https://i.postimg.cc/j2WvZw96/Whats-App-Image-2026-03-02-at-11-44-07.jpg"
+                alt="TechPhantom"
+              />
             </div>
-            <div className="progress-label">{Math.round(Math.min(progress, 100))}%</div>
+
+            <div>
+              <div className="brand-name">
+                <span className="accent">Tech</span>Phantom
+              </div>
+              <div className="brand-tagline">Streaming · HD · Live</div>
+            </div>
+
+            {/* Progress bar — only shown after logo phase */}
+            <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>
+              <div className="progress-header">
+                <span className="progress-label">Iniciando sistema</span>
+                <span className="progress-pct">{Math.round(Math.min(progress, 100))}%</span>
+              </div>
+              <div className="progress-track">
+                <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+              </div>
+            </div>
           </div>
         </div>
       </>

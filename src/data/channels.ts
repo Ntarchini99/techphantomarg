@@ -1,6 +1,5 @@
 import { Channel } from '../types';
 
-// Helper: URL directa de Wikimedia Commons via Special:FilePath (no requiere hash MD5)
 const W = (file: string) =>
   `https://commons.wikimedia.org/wiki/Special:FilePath/${file}`;
 

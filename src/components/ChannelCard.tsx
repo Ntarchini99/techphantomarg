@@ -55,7 +55,6 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
           background: #08080f; overflow: hidden;
         }
 
-        /* Shimmer */
         .tp-card-shimmer {
           position: absolute; inset: 0; z-index: 0;
           background: linear-gradient(90deg, #0b0b12 25%, #131320 50%, #0b0b12 75%);
@@ -121,13 +120,13 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
           padding: 11px 13px 13px; position: relative; z-index: 1;
         }
         .tp-card-title {
-          font-weight: 700; font-size: 0.95rem; color: #d8eaf8;
+          font-weight: 700; font-size: 0.95rem; color: #e8f4ff;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           margin-bottom: 4px; letter-spacing: 0.02em;
           font-family: 'Rajdhani', sans-serif;
         }
         .tp-card-desc {
-          font-size: 0.78rem; color: #2a4a5a; line-height: 1.45;
+          font-size: 0.78rem; color: #6a8a9a; line-height: 1.45;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
           overflow: hidden; margin-bottom: 10px; font-weight: 500;
         }
@@ -137,7 +136,7 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
         .tp-cat-pill {
           display: inline-block;
           background: rgba(0,200,255,0.07);
-          color: rgba(0,200,255,0.7);
+          color: rgba(0,200,255,0.8);
           border: 1px solid rgba(0,200,255,0.18);
           font-size: 0.65rem; font-weight: 700;
           letter-spacing: 0.06em; padding: 2px 8px; border-radius: 2px;
@@ -146,11 +145,10 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
         }
         .tp-country-tag {
           display: flex; align-items: center; gap: 3px;
-          font-size: 0.7rem; color: #1a3a4a; font-weight: 500; flex-shrink: 0;
+          font-size: 0.7rem; color: #6a8a9a; font-weight: 500; flex-shrink: 0;
           font-family: 'Rajdhani', sans-serif;
         }
 
-        /* Hover: top cyan line accent */
         .tp-card::before {
           content: '';
           position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -164,7 +162,6 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
       <div className="tp-card" onClick={onClick}>
         <div className="tp-card-thumb">
           <div className={`tp-card-shimmer ${loaded ? 'done' : ''}`} />
-
           <img
             src={imgSrc}
             alt={channel.name}
@@ -178,18 +175,15 @@ export function ChannelCard({ channel, onClick }: ChannelCardProps) {
               }
             }}
           />
-
           <div className={`tp-type-badge ${channel.type === 'tv' ? 'tp-badge-live' : 'tp-badge-movie'}`}>
             {channel.type === 'tv'
               ? <><span className="tp-live-dot" />En Vivo</>
               : <><Film size={9} />Película</>}
           </div>
-
           <div className="tp-play-overlay">
             <div className="tp-play-btn"><Play size={20} color="#060608" fill="#060608" /></div>
           </div>
         </div>
-
         <div className="tp-card-body">
           <div className="tp-card-title">{channel.name}</div>
           <p className="tp-card-desc">{channel.description}</p>

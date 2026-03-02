@@ -12,7 +12,6 @@ function App() {
   const [phase, setPhase] = useState<'logo' | 'loading'>('logo');
 
   useEffect(() => {
-    // Show logo for 1.8s then transition to loading bar
     const logoTimer = setTimeout(() => setPhase('loading'), 1800);
 
     const interval = setInterval(() => {
@@ -54,11 +53,9 @@ function App() {
             overflow: hidden;
           }
 
-          /* ── Animated grid background ── */
           .splash::before {
             content: '';
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background-image:
               linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
               linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
@@ -71,7 +68,6 @@ function App() {
             100% { background-position: 48px 48px; }
           }
 
-          /* ── Central glow orb ── */
           .glow-orb {
             position: absolute;
             width: 500px; height: 500px;
@@ -85,31 +81,21 @@ function App() {
             50% { transform: scale(1.15); opacity: 1; }
           }
 
-          /* ── Corner scanlines ── */
           .scanlines {
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 3px,
-              rgba(0,0,0,0.08) 3px,
-              rgba(0,0,0,0.08) 4px
+              0deg, transparent, transparent 3px,
+              rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
             );
             pointer-events: none;
           }
 
-          /* ── Logo container ── */
           .logo-container {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 20px;
           }
 
-          /* ── Logo image with hex clip ── */
           .logo-img-wrap {
             position: relative;
             width: 140px; height: 140px;
@@ -121,18 +107,15 @@ function App() {
           }
 
           .logo-ring {
-            position: absolute;
-            inset: -8px;
+            position: absolute; inset: -8px;
             border-radius: 50%;
             border: 2px solid rgba(0,200,255,0.4);
             animation: ring-spin 4s linear infinite;
           }
           .logo-ring::before {
             content: '';
-            position: absolute;
-            top: -3px; left: 50%;
-            width: 8px; height: 8px;
-            border-radius: 50%;
+            position: absolute; top: -3px; left: 50%;
+            width: 8px; height: 8px; border-radius: 50%;
             background: #00c8ff;
             transform: translateX(-50%);
             box-shadow: 0 0 12px #00c8ff, 0 0 24px rgba(0,200,255,0.5);
@@ -143,18 +126,15 @@ function App() {
           }
 
           .logo-ring-2 {
-            position: absolute;
-            inset: -18px;
+            position: absolute; inset: -18px;
             border-radius: 50%;
             border: 1px solid rgba(0,200,255,0.15);
             animation: ring-spin 8s linear infinite reverse;
           }
           .logo-ring-2::before {
             content: '';
-            position: absolute;
-            bottom: -3px; left: 50%;
-            width: 5px; height: 5px;
-            border-radius: 50%;
+            position: absolute; bottom: -3px; left: 50%;
+            width: 5px; height: 5px; border-radius: 50%;
             background: rgba(0,200,255,0.6);
             transform: translateX(-50%);
             box-shadow: 0 0 8px rgba(0,200,255,0.8);
@@ -162,20 +142,13 @@ function App() {
 
           .logo-img {
             width: 140px; height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
+            border-radius: 50%; object-fit: cover;
             border: 2px solid rgba(0,200,255,0.3);
-            box-shadow:
-              0 0 30px rgba(0,200,255,0.2),
-              0 0 60px rgba(0,100,200,0.15),
-              inset 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,200,255,0.2), 0 0 60px rgba(0,100,200,0.15), inset 0 0 20px rgba(0,0,0,0.5);
           }
 
-          /* ── Glitch pulse on logo ── */
           .logo-img-wrap::after {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             border-radius: 50%;
             background: rgba(0,200,255,0.08);
             animation: logo-pulse 2s ease-in-out infinite 0.3s;
@@ -185,7 +158,6 @@ function App() {
             50% { opacity: 1; transform: scale(1.08); }
           }
 
-          /* ── Brand name ── */
           .brand-name {
             font-family: 'Bebas Neue', cursive;
             font-size: clamp(2.5rem, 7vw, 4.2rem);
@@ -193,66 +165,53 @@ function App() {
             color: #f0f8ff;
             position: relative;
             animation: name-appear 0.5s ease 0.3s both;
-            text-shadow:
-              0 0 20px rgba(0,200,255,0.4),
-              0 0 40px rgba(0,100,200,0.2);
+            text-shadow: 0 0 20px rgba(0,200,255,0.4), 0 0 40px rgba(0,100,200,0.2);
           }
           @keyframes name-appear {
             from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
           }
-
-          /* Cyan accent on first word */
           .brand-name .accent { color: #00c8ff; }
 
           .brand-tagline {
             font-size: 0.72rem;
             letter-spacing: 0.35em;
             text-transform: uppercase;
-            color: rgba(0,200,255,0.5);
+            color: rgba(0,200,255,0.7);
             font-weight: 500;
             animation: name-appear 0.5s ease 0.45s both;
           }
 
-          /* ── Loading phase ── */
           .loading-section {
             margin-top: 48px;
             width: min(340px, 75vw);
             animation: name-appear 0.4s ease 0.6s both;
           }
-
           .loading-section.hidden {
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0; pointer-events: none;
           }
 
           .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px;
           }
           .progress-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.2em;
+            font-size: 0.65rem; letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: rgba(0,200,255,0.4);
+            color: rgba(0,200,255,0.65);
             font-weight: 600;
           }
           .progress-pct {
             font-family: 'Rajdhani', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: rgba(0,200,255,0.6);
+            font-size: 0.75rem; font-weight: 600;
+            color: rgba(0,200,255,0.85);
             letter-spacing: 0.05em;
           }
 
           .progress-track {
             height: 2px;
             background: rgba(255,255,255,0.05);
-            border-radius: 2px;
-            overflow: visible;
-            position: relative;
+            border-radius: 2px; overflow: visible; position: relative;
           }
           .progress-fill {
             height: 100%;
@@ -264,37 +223,26 @@ function App() {
           }
           .progress-fill::after {
             content: '';
-            position: absolute;
-            right: -1px; top: 50%;
+            position: absolute; right: -1px; top: 50%;
             transform: translateY(-50%);
-            width: 6px; height: 6px;
-            border-radius: 50%;
+            width: 6px; height: 6px; border-radius: 50%;
             background: #00c8ff;
             box-shadow: 0 0 8px #00c8ff, 0 0 16px rgba(0,200,255,0.6);
           }
 
-          /* ── Floating particles ── */
-          .particles {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            overflow: hidden;
-          }
+          .particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
           .particle {
-            position: absolute;
-            width: 2px; height: 2px;
-            border-radius: 50%;
-            background: rgba(0,200,255,0.6);
+            position: absolute; border-radius: 50%;
+            background: rgba(0,200,255,0.7);
             animation: float-up linear infinite;
           }
           @keyframes float-up {
             0% { transform: translateY(0) translateX(0); opacity: 0; }
             10% { opacity: 1; }
-            90% { opacity: 0.5; }
+            90% { opacity: 0.6; }
             100% { transform: translateY(-100vh) translateX(var(--drift, 20px)); opacity: 0; }
           }
 
-          /* ── Corner decorations ── */
           .corner { position: absolute; width: 40px; height: 40px; }
           .corner-tl { top: 24px; left: 24px; border-top: 1px solid rgba(0,200,255,0.3); border-left: 1px solid rgba(0,200,255,0.3); }
           .corner-tr { top: 24px; right: 24px; border-top: 1px solid rgba(0,200,255,0.3); border-right: 1px solid rgba(0,200,255,0.3); }
@@ -303,11 +251,9 @@ function App() {
         `}</style>
 
         <div className="splash">
-          {/* BG effects */}
           <div className="glow-orb" />
           <div className="scanlines" />
 
-          {/* Floating particles */}
           <div className="particles">
             {Array.from({ length: 18 }).map((_, i) => (
               <div
@@ -320,20 +266,18 @@ function App() {
                   animationDelay: `${Math.random() * 6}s`,
                   width: `${1 + Math.random() * 2}px`,
                   height: `${1 + Math.random() * 2}px`,
-                  opacity: 0.3 + Math.random() * 0.5,
+                  opacity: 0.5 + Math.random() * 0.4,
                   ['--drift' as any]: `${(Math.random() - 0.5) * 60}px`,
                 }}
               />
             ))}
           </div>
 
-          {/* Corner decorations */}
           <div className="corner corner-tl" />
           <div className="corner corner-tr" />
           <div className="corner corner-bl" />
           <div className="corner corner-br" />
 
-          {/* Logo + Brand */}
           <div className="logo-container">
             <div className="logo-img-wrap">
               <div className="logo-ring" />
@@ -352,7 +296,6 @@ function App() {
               <div className="brand-tagline">Streaming · HD · Live</div>
             </div>
 
-            {/* Progress bar — only shown after logo phase */}
             <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>
               <div className="progress-header">
                 <span className="progress-label">Iniciando sistema</span>

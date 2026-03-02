@@ -215,13 +215,13 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         .lm-pills { display: flex; gap: 4px; }
         .lm-pill {
           padding: 3px 9px; border-radius: 3px;
-          border: 1px solid rgba(0,200,255,0.1);
-          background: none; color: rgba(0,200,255,0.3);
+          border: 1px solid rgba(0,200,255,0.15);
+          background: none; color: rgba(0,200,255,0.5);
           font-family: 'Rajdhani', sans-serif; font-size: 0.68rem; font-weight: 700;
           letter-spacing: 0.08em; text-transform: uppercase;
           cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
-        .lm-pill:hover { color: rgba(0,200,255,0.7); border-color: rgba(0,200,255,0.25); }
+        .lm-pill:hover { color: rgba(0,200,255,0.8); border-color: rgba(0,200,255,0.35); }
         .lm-pill.active {
           background: rgba(0,200,255,0.12);
           border-color: rgba(0,200,255,0.45);
@@ -236,25 +236,24 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         .lm-expand-btn {
           display: flex; align-items: center; gap: 3px;
           padding: 3px 8px; border-radius: 3px;
-          border: 1px solid rgba(0,200,255,0.1);
-          background: none; color: rgba(0,200,255,0.3);
+          border: 1px solid rgba(0,200,255,0.15);
+          background: none; color: rgba(0,200,255,0.5);
           font-family: 'Rajdhani', sans-serif; font-size: 0.68rem; font-weight: 700;
           letter-spacing: 0.06em; text-transform: uppercase;
           cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
-        .lm-expand-btn:hover { color: rgba(0,200,255,0.7); border-color: rgba(0,200,255,0.28); }
+        .lm-expand-btn:hover { color: rgba(0,200,255,0.8); border-color: rgba(0,200,255,0.35); }
 
         .lm-refresh-btn {
           width: 26px; height: 26px; border-radius: 5px;
-          background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.1);
-          color: rgba(0,200,255,0.3); cursor: pointer;
+          background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.15);
+          color: rgba(0,200,255,0.5); cursor: pointer;
           display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
-        .lm-refresh-btn:hover { color: #00c8ff; border-color: rgba(0,200,255,0.3); }
+        .lm-refresh-btn:hover { color: #00c8ff; border-color: rgba(0,200,255,0.4); }
         .lm-refresh-btn.spinning svg { animation: lm-spin 0.8s linear infinite; }
         @keyframes lm-spin { to { transform: rotate(360deg); } }
 
-        /* Cards */
         .lm-card {
           padding: 9px 14px;
           border-bottom: 1px solid rgba(0,200,255,0.05);
@@ -264,11 +263,11 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         .lm-card:hover { background: rgba(0,200,255,0.02); }
         .lm-card--live { background: rgba(0,200,255,0.025); }
         .lm-card--live:hover { background: rgba(0,200,255,0.04); }
-        .lm-card--finished { opacity: 0.4; }
+        .lm-card--finished { opacity: 0.5; }
 
         .lm-card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
         .lm-league {
-          font-size: 0.63rem; color: rgba(0,200,255,0.3); font-weight: 600;
+          font-size: 0.63rem; color: rgba(0,200,255,0.55); font-weight: 600;
           text-transform: uppercase; letter-spacing: 0.06em;
           flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
@@ -284,10 +283,10 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
           width: 5px; height: 5px; border-radius: 50%; background: #00c8ff;
           box-shadow: 0 0 6px #00c8ff; animation: lm-pulse 1.4s ease-in-out infinite;
         }
-        .lm-fin-lg { font-size: 0.65rem; color: #1a2a3a; font-weight: 600; letter-spacing: 0.05em; }
+        .lm-fin-lg { font-size: 0.65rem; color: #4a6a7a; font-weight: 600; letter-spacing: 0.05em; }
         .lm-upco-lg {
           display: inline-flex; align-items: center; gap: 4px;
-          font-size: 0.65rem; color: rgba(0,200,255,0.3); font-weight: 500;
+          font-size: 0.65rem; color: rgba(0,200,255,0.55); font-weight: 500;
         }
 
         .lm-body { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
@@ -295,49 +294,47 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
         .lm-team--home { justify-content: flex-end; }
         .lm-team--away { justify-content: flex-start; }
         .lm-tname {
-          font-size: 0.76rem; font-weight: 600; color: #7090a8;
+          font-size: 0.76rem; font-weight: 600; color: #90b0c8;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85px;
         }
         .lm-team-logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
         .lm-logo-fb {
           width: 20px; height: 20px; border-radius: 50%;
-          background: rgba(0,200,255,0.06); color: rgba(0,200,255,0.4);
+          background: rgba(0,200,255,0.06); color: rgba(0,200,255,0.5);
           font-size: 0.62rem; font-weight: 700;
           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .lm-vs { flex-shrink: 0; padding: 0 4px; }
-        .lm-vs-txt { font-size: 0.62rem; color: #1a2a3a; font-weight: 700; }
+        .lm-vs-txt { font-size: 0.62rem; color: #3a5a6a; font-weight: 700; }
         .lm-score {
           font-family: 'Bebas Neue', cursive; font-size: 1.25rem;
-          color: #1a3a4a; letter-spacing: 0.05em; line-height: 1; flex-shrink: 0;
+          color: #3a5a6a; letter-spacing: 0.05em; line-height: 1; flex-shrink: 0;
         }
         .lm-score--live { color: #e8f4ff; text-shadow: 0 0 10px rgba(0,200,255,0.3); }
-        .lm-sep { font-family: 'Bebas Neue', cursive; font-size: 1rem; color: #0d1a22; }
+        .lm-sep { font-family: 'Bebas Neue', cursive; font-size: 1rem; color: #2a4a5a; }
 
         .lm-watch-btn {
           display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%;
-          background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.12);
-          border-radius: 4px; color: rgba(0,200,255,0.5);
+          background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.15);
+          border-radius: 4px; color: rgba(0,200,255,0.6);
           font-family: 'Rajdhani', sans-serif; font-size: 0.67rem; font-weight: 700;
           letter-spacing: 0.06em; text-transform: uppercase;
           padding: 4px 10px; cursor: pointer; transition: all 0.15s;
         }
         .lm-watch-btn:hover {
           background: rgba(0,200,255,0.1);
-          border-color: rgba(0,200,255,0.3);
+          border-color: rgba(0,200,255,0.35);
           color: #00c8ff;
         }
         .lm-ch-logo {
           height: 14px; width: auto; max-width: 68px;
-          object-fit: contain; opacity: 0.7; transition: opacity 0.15s;
+          object-fit: contain; opacity: 0.8; transition: opacity 0.15s;
         }
         .lm-watch-btn:hover .lm-ch-logo { opacity: 1; }
 
-        /* Expand collapse */
         .lm-extra { overflow: hidden; max-height: 0; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
         .lm-extra.open { max-height: 2000px; transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1); }
 
-        /* States */
         .lm-state {
           padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
@@ -346,17 +343,17 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
           border: 2px solid rgba(0,200,255,0.1); border-top-color: #00c8ff;
           animation: lm-spin 0.8s linear infinite;
         }
-        .lm-state p { font-size: 0.76rem; color: rgba(0,200,255,0.2); font-weight: 500; }
+        .lm-state p { font-size: 0.76rem; color: rgba(0,200,255,0.45); font-weight: 500; }
         .lm-retry-btn {
           background: rgba(0,200,255,0.08); border: 1px solid rgba(0,200,255,0.2);
-          color: rgba(0,200,255,0.6); border-radius: 5px; padding: 5px 14px;
+          color: rgba(0,200,255,0.7); border-radius: 5px; padding: 5px 14px;
           font-size: 0.75rem; font-weight: 700; cursor: pointer;
           font-family: 'Rajdhani', sans-serif; letter-spacing: 0.06em;
         }
 
         .lm-footer {
           padding: 6px 14px; border-top: 1px solid rgba(0,200,255,0.05);
-          font-size: 0.6rem; color: rgba(0,200,255,0.2); text-align: right;
+          font-size: 0.6rem; color: rgba(0,200,255,0.35); text-align: right;
           font-family: 'Rajdhani', sans-serif; font-weight: 500;
         }
       `}</style>
@@ -394,13 +391,13 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
             <div className="lm-state"><div className="lm-spinner" /><p>Cargando partidos…</p></div>
           ) : error ? (
             <div className="lm-state">
-              <Wifi size={24} color="#0d1a22" />
+              <Wifi size={24} color="#2a4a5a" />
               <p>No se pudo conectar</p>
               <button className="lm-retry-btn" onClick={fetchMatches}>Reintentar</button>
             </div>
           ) : displayed.length === 0 ? (
             <div className="lm-state">
-              <Activity size={24} color="#0d1a22" />
+              <Activity size={24} color="#2a4a5a" />
               <p>{filter === 'live' ? 'No hay partidos en vivo' : 'No hay partidos hoy'}</p>
             </div>
           ) : (

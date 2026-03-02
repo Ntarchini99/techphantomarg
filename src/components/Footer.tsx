@@ -113,7 +113,7 @@ function Modal({ type, onClose }: { type: ModalType; onClose: () => void }) {
         .tp-modal-close {
           width: 30px; height: 30px; border-radius: 6px;
           background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.12);
-          color: rgba(0,200,255,0.4); cursor: pointer;
+          color: rgba(0,200,255,0.5); cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: all 0.2s; flex-shrink: 0;
         }
@@ -122,16 +122,16 @@ function Modal({ type, onClose }: { type: ModalType; onClose: () => void }) {
         .tp-modal-body {
           padding: 22px; overflow-y: auto;
           font-family: 'Rajdhani', sans-serif;
-          color: #4a7a8a; font-size: 0.9rem; line-height: 1.7; font-weight: 500;
+          color: #7aaaba; font-size: 0.9rem; line-height: 1.7; font-weight: 500;
           scrollbar-width: thin; scrollbar-color: rgba(0,200,255,0.2) transparent;
         }
         .tp-modal-body p { margin-bottom: 14px; }
         .tp-modal-body h4 {
           font-family: 'Bebas Neue', cursive;
           font-size: 1rem; letter-spacing: 0.1em;
-          color: rgba(0,200,255,0.6); margin: 20px 0 8px;
+          color: rgba(0,200,255,0.75); margin: 20px 0 8px;
         }
-        .tp-modal-body strong { color: rgba(0,200,255,0.8); font-weight: 700; }
+        .tp-modal-body strong { color: rgba(0,200,255,0.9); font-weight: 700; }
       `}</style>
 
       <div className="tp-modal-overlay" onClick={onClose}>
@@ -197,9 +197,9 @@ export function Footer() {
         }
         .tp-footer-link {
           display: flex; align-items: center; gap: 5px;
-          background: none; border: 1px solid rgba(0,200,255,0.1);
+          background: none; border: 1px solid rgba(0,200,255,0.15);
           border-radius: 4px;
-          color: rgba(0,200,255,0.35);
+          color: rgba(0,200,255,0.55);
           font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; font-weight: 700;
           letter-spacing: 0.1em; text-transform: uppercase;
           padding: 5px 13px; cursor: pointer;
@@ -207,13 +207,13 @@ export function Footer() {
         }
         .tp-footer-link:hover {
           background: rgba(0,200,255,0.06);
-          border-color: rgba(0,200,255,0.3);
+          border-color: rgba(0,200,255,0.35);
           color: #00c8ff;
           box-shadow: 0 0 10px rgba(0,200,255,0.06);
         }
         .tp-footer-sep {
           width: 3px; height: 3px; border-radius: 50%;
-          background: rgba(0,200,255,0.15);
+          background: rgba(0,200,255,0.2);
         }
 
         .tp-footer-disclaimer {
@@ -225,20 +225,19 @@ export function Footer() {
           max-width: 720px;
         }
         .tp-footer-disclaimer p {
-          font-size: 0.73rem; color: #1e3a48; line-height: 1.65;
+          font-size: 0.73rem; color: #5a7a8a; line-height: 1.65;
           font-weight: 500; margin: 0;
         }
-        .tp-footer-disclaimer strong { color: rgba(0,200,255,0.38); font-weight: 700; }
+        .tp-footer-disclaimer strong { color: rgba(0,200,255,0.55); font-weight: 700; }
 
         .tp-footer-copy {
-          font-size: 0.63rem; color: rgba(0,200,255,0.12);
+          font-size: 0.63rem; color: rgba(0,200,255,0.3);
           letter-spacing: 0.1em; text-align: center; font-weight: 500;
         }
       `}</style>
 
       <footer className="tp-footer">
         <div className="tp-footer-inner">
-
           <div className="tp-footer-brand">
             <img
               className="tp-footer-logo"
@@ -272,7 +271,6 @@ export function Footer() {
           <div className="tp-footer-copy">
             © {year} TechPhantom · Solo reproductor · Todos los derechos de los canales pertenecen a sus respectivos titulares
           </div>
-
         </div>
       </footer>
 

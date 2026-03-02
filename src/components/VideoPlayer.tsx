@@ -94,8 +94,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           position: relative;
           overflow-x: hidden;
         }
-
-        /* Grid bg */
         .vp-root::before {
           content: '';
           position: fixed; inset: 0;
@@ -106,8 +104,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 80%);
           pointer-events: none; z-index: 0;
         }
-
-        /* Header */
         .vp-header {
           position: sticky; top: 0; z-index: 50;
           background: linear-gradient(180deg, rgba(6,6,8,0.98) 0%, rgba(6,6,8,0.88) 100%);
@@ -124,12 +120,11 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           max-width: 1200px; margin: 0 auto;
           display: flex; align-items: center; gap: 16px;
         }
-
         .vp-back-btn {
           display: flex; align-items: center; gap: 7px;
           background: rgba(0,200,255,0.06);
           border: 1px solid rgba(0,200,255,0.15);
-          border-radius: 7px; color: #4a8aaa;
+          border-radius: 7px; color: #7aaaba;
           font-family: 'Rajdhani', sans-serif; font-size: 0.88rem; font-weight: 600;
           letter-spacing: 0.05em;
           padding: 9px 14px; cursor: pointer; flex-shrink: 0;
@@ -141,7 +136,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           color: #00c8ff;
           box-shadow: 0 0 12px rgba(0,200,255,0.08);
         }
-
         .vp-header-info { flex: 1; min-width: 0; }
         .vp-channel-name {
           font-family: 'Bebas Neue', cursive;
@@ -151,11 +145,10 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           text-shadow: 0 0 12px rgba(0,200,255,0.2);
         }
         .vp-channel-desc {
-          font-size: 0.78rem; color: #2a4a5a;
+          font-size: 0.78rem; color: #6a8a9a;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           margin-top: 2px; font-weight: 500;
         }
-
         .vp-status-badge {
           display: flex; align-items: center; gap: 5px;
           padding: 5px 10px; border-radius: 4px;
@@ -171,15 +164,11 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           animation: vp-pulse 1.4s ease-in-out infinite;
         }
         @keyframes vp-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
-
-        /* Main */
         .vp-main {
           max-width: 1200px; margin: 0 auto;
           padding: 28px 24px 64px;
           position: relative; z-index: 1;
         }
-
-        /* Channel nav */
         .vp-nav {
           display: flex; align-items: center; justify-content: space-between;
           gap: 12px; margin-bottom: 16px;
@@ -188,7 +177,7 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           display: flex; align-items: center; gap: 8px;
           background: rgba(0,200,255,0.04);
           border: 1px solid rgba(0,200,255,0.1);
-          border-radius: 8px; color: #2a5a6a;
+          border-radius: 8px; color: #6a8a9a;
           font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 600;
           padding: 10px 16px; cursor: pointer; transition: all 0.2s;
           max-width: 240px; overflow: hidden;
@@ -196,13 +185,11 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         .vp-nav-btn:hover {
           background: rgba(0,200,255,0.08);
           border-color: rgba(0,200,255,0.3);
-          color: #80c8e8;
+          color: #90c8e8;
         }
         .vp-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
         .vp-nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .vp-nav-count { font-size: 0.75rem; color: rgba(0,200,255,0.3); font-weight: 600; white-space: nowrap; }
-
-        /* Video box */
+        .vp-nav-count { font-size: 0.75rem; color: rgba(0,200,255,0.45); font-weight: 600; white-space: nowrap; }
         .vp-video-box {
           border-radius: 10px; overflow: hidden;
           border: 1px solid rgba(0,200,255,0.1);
@@ -213,15 +200,12 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         .vp-video-ratio iframe {
           position: absolute; inset: 0; width: 100%; height: 100%; border: none;
         }
-
-        /* Overlays */
         .vp-overlay {
           position: absolute; inset: 0; z-index: 5;
           display: flex; align-items: center; justify-content: center;
           background: #08080f; transition: opacity 0.4s ease;
         }
         .vp-overlay.out { opacity: 0; pointer-events: none; }
-
         .vp-spinner {
           width: 48px; height: 48px; border-radius: 50%;
           border: 2px solid rgba(0,200,255,0.1);
@@ -230,10 +214,9 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         }
         @keyframes vp-spin { to { transform: rotate(360deg); } }
         .vp-loading-text {
-          margin-top: 16px; font-size: 0.82rem; color: rgba(0,200,255,0.3);
+          margin-top: 16px; font-size: 0.82rem; color: rgba(0,200,255,0.5);
           letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
         }
-
         .vp-blocked-icon {
           width: 68px; height: 68px;
           background: rgba(255,160,0,0.06);
@@ -242,8 +225,8 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           display: flex; align-items: center; justify-content: center;
           margin: 0 auto 18px;
         }
-        .vp-blocked-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #d0e8f0; font-family: 'Rajdhani', sans-serif; }
-        .vp-blocked-msg { font-size: 0.85rem; color: #2a4a5a; margin-bottom: 22px; max-width: 320px; line-height: 1.6; font-family: 'Rajdhani', sans-serif; }
+        .vp-blocked-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #e8f4ff; font-family: 'Rajdhani', sans-serif; }
+        .vp-blocked-msg { font-size: 0.85rem; color: #6a8a9a; margin-bottom: 22px; max-width: 320px; line-height: 1.6; font-family: 'Rajdhani', sans-serif; }
         .vp-open-btn {
           display: inline-flex; align-items: center; gap: 8px;
           background: rgba(0,200,255,0.12); color: #00c8ff;
@@ -259,30 +242,28 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           border-color: rgba(0,200,255,0.6);
           box-shadow: 0 0 30px rgba(0,200,255,0.2);
         }
-        .vp-blocked-url { margin-top: 12px; font-size: 0.68rem; color: #1a2a3a; word-break: break-all; }
-
-        /* Server selector */
+        .vp-blocked-url { margin-top: 12px; font-size: 0.68rem; color: #4a6a7a; word-break: break-all; }
         .vp-servers {
           margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
         }
         .vp-servers-label {
-          font-size: 0.72rem; color: rgba(0,200,255,0.35); font-weight: 700;
+          font-size: 0.72rem; color: rgba(0,200,255,0.5); font-weight: 700;
           text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
           font-family: 'Rajdhani', sans-serif;
         }
         .vp-server-btns { display: flex; gap: 8px; flex-wrap: wrap; }
         .vp-server-btn {
           padding: 6px 16px; border-radius: 4px;
-          border: 1px solid rgba(0,200,255,0.12);
+          border: 1px solid rgba(0,200,255,0.15);
           background: rgba(0,200,255,0.04);
-          color: rgba(0,200,255,0.4);
+          color: rgba(0,200,255,0.55);
           font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 600;
           letter-spacing: 0.06em;
           cursor: pointer; transition: all 0.18s; white-space: nowrap;
         }
         .vp-server-btn:hover {
           border-color: rgba(0,200,255,0.35);
-          color: #80c8e0;
+          color: #90c8e0;
           background: rgba(0,200,255,0.07);
         }
         .vp-server-btn.active {
@@ -291,8 +272,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           color: #00c8ff;
           box-shadow: 0 0 10px rgba(0,200,255,0.1);
         }
-
-        /* Info panel */
         .vp-info {
           margin-top: 20px;
           background: #0b0b12;
@@ -307,7 +286,7 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           line-height: 1; margin-bottom: 8px;
           text-shadow: 0 0 12px rgba(0,200,255,0.15);
         }
-        .vp-info-desc { font-size: 0.875rem; color: #2a4a5a; line-height: 1.6; margin-bottom: 14px; font-weight: 500; }
+        .vp-info-desc { font-size: 0.875rem; color: #6a8a9a; line-height: 1.6; margin-bottom: 14px; font-weight: 500; }
         .vp-meta-pills { display: flex; flex-wrap: wrap; gap: 8px; }
         .vp-mpill {
           display: inline-flex; align-items: center; gap: 4px;
@@ -316,12 +295,10 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           letter-spacing: 0.06em; text-transform: uppercase;
           font-family: 'Rajdhani', sans-serif;
         }
-        .vp-mpill-cat  { background: rgba(0,200,255,0.07); border: 1px solid rgba(0,200,255,0.2); color: rgba(0,200,255,0.7); }
-        .vp-mpill-co   { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: #2a4a5a; }
+        .vp-mpill-cat  { background: rgba(0,200,255,0.07); border: 1px solid rgba(0,200,255,0.2); color: rgba(0,200,255,0.8); }
+        .vp-mpill-co   { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #6a8a9a; }
         .vp-mpill-live { background: rgba(0,200,255,0.08); border: 1px solid rgba(0,200,255,0.25); color: #00c8ff; }
         .vp-mpill-film { background: rgba(80,40,180,0.1); border: 1px solid rgba(80,40,180,0.3); color: #a080f0; }
-
-        /* Tip bar */
         .vp-tip {
           margin-top: 16px;
           background: rgba(0,200,255,0.03);
@@ -334,8 +311,8 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           background: rgba(0,200,255,0.08);
           border-radius: 6px; display: flex; align-items: center; justify-content: center;
         }
-        .vp-tip-text { font-size: 0.8rem; color: #2a4a5a; line-height: 1.5; font-weight: 500; }
-        .vp-tip-text strong { color: rgba(0,200,255,0.55); font-weight: 700; }
+        .vp-tip-text { font-size: 0.82rem; color: #6a8a9a; line-height: 1.5; font-weight: 500; }
+        .vp-tip-text strong { color: rgba(0,200,255,0.7); font-weight: 700; }
       `}</style>
 
       <div className="vp-root" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -353,7 +330,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         </header>
 
         <main className="vp-main">
-          {/* Channel nav */}
           <div className="vp-nav">
             <button className="vp-nav-btn" disabled={!prevChannel} onClick={() => prevChannel && handleChannelChange(prevChannel)}>
               <ChevronLeft size={16} /><span className="vp-nav-label">{prevChannel?.name ?? 'Anterior'}</span>
@@ -364,32 +340,25 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
             </button>
           </div>
 
-          {/* Video */}
           <div className="vp-video-box">
             <div className="vp-video-ratio">
-              {/* Spinner */}
               <div className={`vp-overlay ${!loading ? 'out' : ''}`}>
                 <div style={{ textAlign: 'center' }}>
                   <div className="vp-spinner" />
                   <p className="vp-loading-text">Cargando señal…</p>
                 </div>
               </div>
-
-              {/* Blocked */}
               {blocked && (
                 <div className="vp-overlay">
                   <div style={{ textAlign: 'center', padding: '0 32px' }}>
                     <div className="vp-blocked-icon"><AlertCircle size={28} color="#ffa000" /></div>
                     <p className="vp-blocked-title">Este canal no permite embedding</p>
                     <p className="vp-blocked-msg">El sitio bloquea la reproducción dentro de otras páginas. Podés verlo directamente.</p>
-                    <button className="vp-open-btn" onClick={openInTab}>
-                      <ExternalLink size={15} />Abrir en nueva pestaña
-                    </button>
+                    <button className="vp-open-btn" onClick={openInTab}><ExternalLink size={15} />Abrir en nueva pestaña</button>
                     <p className="vp-blocked-url">{currentUrl}</p>
                   </div>
                 </div>
               )}
-
               <iframe
                 key={`${channel.id}-${activeStream}`}
                 src={currentUrl}
@@ -401,7 +370,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
             </div>
           </div>
 
-          {/* Server selector */}
           {hasOptions && (
             <div className="vp-servers">
               <span className="vp-servers-label">Servidores:</span>
@@ -415,7 +383,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
             </div>
           )}
 
-          {/* Info */}
           <div className="vp-info">
             <div className="vp-info-main">
               <div className="vp-info-name">{channel.name}</div>

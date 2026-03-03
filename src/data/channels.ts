@@ -100,7 +100,7 @@ export const channels: Channel[] = [
 
   // ── Argentina (canales conservados sin pelisjuanita) ─────────────────────
   { id: '3',   slug: 'america',     name: 'AMÉRICA',    description: 'América TV Argentina',         logo: LOGOS.america,    category: 'Entretenimiento', country: 'Argentina', streamUrl: 'https://www.americatv.com.ar/', type: 'tv' },
-  { id: '6',   slug: 'c5n',         name: 'C5N',        description: 'C5N - Noticias Argentina',     logo: LOGOS.c5n,        category: 'Noticias',        country: 'Argentina', streamUrl: 'https://www.youtube.com/embed/live_stream?channel=UCmBcFbIFJkuE7hUuOoHsHMg&autoplay=1', type: 'tv' },
+  { id: '6',   slug: 'c5n',         name: 'C5N',        description: 'C5N - Noticias Argentina',     logo: LOGOS.c5n,        category: 'Noticias',        country: 'Argentina', streamUrl: 'https://www.c5n.com/vivo', type: 'tv' },
   { id: '19',  slug: 'deportv',     name: 'DeporTV',    description: 'DeporTV - Deportes',           logo: LOGOS.deportv,    category: 'Deportes',        country: 'Argentina', streamUrl: 'https://latamvidz1.com/canal.php?stream=deportv',          type: 'tv' },
   { id: '26',  slug: 'espn-2',      name: 'ESPN 2',     description: 'ESPN 2',                       logo: LOGOS.espn2,      category: 'Deportes',        country: 'Argentina', streamUrl: 'https://latamvidz1.com/canal.php?stream=espn2',            type: 'tv' },
   { id: '27',  slug: 'espn-3',      name: 'ESPN 3',     description: 'ESPN 3',                       logo: LOGOS.espn3,      category: 'Deportes',        country: 'Argentina', streamUrl: 'https://latamvidz1.com/canal.php?stream=espn3',            type: 'tv' },

@@ -54,7 +54,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
       return matchesCategory && matchesCountry && matchesSearch;
     });
 
-    // Sort: priority channels first, then rest alphabetically
     return filtered.sort((a, b) => {
       const pa = getPriorityScore(a.name);
       const pb = getPriorityScore(b.name);
@@ -63,7 +62,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
     });
   }, [channels, filters]);
 
-  // Reset to page 1 when filters change
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -84,7 +82,6 @@ export function ChannelList({ channels, onChannelSelect }: ChannelListProps) {
     if (ch) onChannelSelect(ch);
   };
 
-  // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | '...')[] = [];
     if (totalPages <= 7) {

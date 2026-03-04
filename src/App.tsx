@@ -3,13 +3,17 @@ import { Channel } from './types';
 import { channels as channelsData } from './data/channels';
 import { ChannelList } from './components/ChannelList';
 import { VideoPlayer } from './components/VideoPlayer';
+import { MovieSection } from './components/MovieSection';
+
+type View = 'channels' | 'player' | 'movies';
 
 function App() {
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<'logo' | 'loading'>('logo');
+  const [channels, setChannels]               = useState<Channel[]>([]);
+  const [view, setView]                        = useState<View>('channels');
+  const [selectedChannel, setSelectedChannel]  = useState<Channel | null>(null);
+  const [loading, setLoading]                  = useState(true);
+  const [progress, setProgress]                = useState(0);
+  const [phase, setPhase]                      = useState<'logo' | 'loading'>('logo');
 
   useEffect(() => {
     const logoTimer = setTimeout(() => setPhase('loading'), 1800);
@@ -33,6 +37,7 @@ function App() {
     return () => { clearInterval(interval); clearTimeout(logoTimer); };
   }, []);
 
+  // ── Splash screen ──────────────────────────────────────────────────────────
   if (loading) {
     return (
       <>
@@ -253,49 +258,34 @@ function App() {
         <div className="splash">
           <div className="glow-orb" />
           <div className="scanlines" />
-
           <div className="particles">
             {Array.from({ length: 18 }).map((_, i) => (
-              <div
-                key={i}
-                className="particle"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  bottom: `${Math.random() * 20}%`,
-                  animationDuration: `${4 + Math.random() * 8}s`,
-                  animationDelay: `${Math.random() * 6}s`,
-                  width: `${1 + Math.random() * 2}px`,
-                  height: `${1 + Math.random() * 2}px`,
-                  opacity: 0.5 + Math.random() * 0.4,
-                  ['--drift' as any]: `${(Math.random() - 0.5) * 60}px`,
-                }}
-              />
+              <div key={i} className="particle" style={{
+                left: `${Math.random() * 100}%`,
+                bottom: `${Math.random() * 20}%`,
+                animationDuration: `${4 + Math.random() * 8}s`,
+                animationDelay: `${Math.random() * 6}s`,
+                width: `${1 + Math.random() * 2}px`,
+                height: `${1 + Math.random() * 2}px`,
+                opacity: 0.5 + Math.random() * 0.4,
+                ['--drift' as any]: `${(Math.random() - 0.5) * 60}px`,
+              }} />
             ))}
           </div>
-
           <div className="corner corner-tl" />
           <div className="corner corner-tr" />
           <div className="corner corner-bl" />
           <div className="corner corner-br" />
-
           <div className="logo-container">
             <div className="logo-img-wrap">
               <div className="logo-ring" />
               <div className="logo-ring-2" />
-              <img
-                className="logo-img"
-                src="https://i.postimg.cc/j2WvZw96/Whats-App-Image-2026-03-02-at-11-44-07.jpg"
-                alt="TechPhantom"
-              />
+              <img className="logo-img" src="https://i.postimg.cc/j2WvZw96/Whats-App-Image-2026-03-02-at-11-44-07.jpg" alt="TechPhantom" />
             </div>
-
             <div>
-              <div className="brand-name">
-                <span className="accent">Tech</span>Phantom
-              </div>
+              <div className="brand-name"><span className="accent">Tech</span>Phantom</div>
               <div className="brand-tagline">Streaming · HD · Live · Películas · Series · Streams</div>
             </div>
-
             <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>
               <div className="progress-header">
                 <span className="progress-label">Iniciando sistema</span>
@@ -311,18 +301,31 @@ function App() {
     );
   }
 
-  if (selectedChannel) {
+  // ── Video player ────────────────────────────────────────────────────────────
+  if (view === 'player' && selectedChannel) {
     return (
       <VideoPlayer
         channel={selectedChannel}
         channels={channels}
-        onBack={() => setSelectedChannel(null)}
-        onChannelChange={setSelectedChannel}
+        onBack={() => setView('channels')}
+        onChannelChange={(ch) => { setSelectedChannel(ch); setView('player'); }}
       />
     );
   }
 
-  return <ChannelList channels={channels} onChannelSelect={setSelectedChannel} />;
+  // ── Películas ───────────────────────────────────────────────────────────────
+  if (view === 'movies') {
+    return <MovieSection onBack={() => setView('channels')} />;
+  }
+
+  // ── Channel list (default) ──────────────────────────────────────────────────
+  return (
+    <ChannelList
+      channels={channels}
+      onChannelSelect={(ch) => { setSelectedChannel(ch); setView('player'); }}
+      onMoviesClick={() => setView('movies')}
+    />
+  );
 }
 
 export default App;

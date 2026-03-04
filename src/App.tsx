@@ -293,7 +293,7 @@ function App() {
               <div className="brand-name">
                 <span className="accent">Tech</span>Phantom
               </div>
-              <div className="brand-tagline">Streaming · HD · Live</div>
+              <div className="brand-tagline">Streaming · HD · Live · Películas · Series · Streams</div>
             </div>
 
             <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>

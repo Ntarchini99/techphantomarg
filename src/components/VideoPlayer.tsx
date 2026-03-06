@@ -9,7 +9,547 @@ interface VideoPlayerProps {
   onChannelChange: (channel: Channel) => void;
 }
 
+const PJ_BASE = 'https://pelisjuanita.com/tv/';
+const PJ_CVATT = (get: string) => `${PJ_BASE}cvatt.html?get=${get}`;
+const PJ_EMBED  = (file: string) => `https://embed.saohgdasregions.fun/embed2/${file}`;
+const PJ_EMBED2 = (file: string) => `https://embed.sdfgnksbounce.com/embed2/${file}`;
+
+// Mapa slug → array de servidores (extraído directamente del HTML de pelisjuanita)
+const PJ_STREAMS: Record<string, { label: string; url: string }[]> = {
+  // ── Argentina — aire ──────────────────────────────────────────────────────
+  'telefe': [
+    { label: 'Servidor 1', url: PJ_EMBED('telefe.html') },
+    { label: 'Servidor 2', url: PJ_CVATT('VGVsZWZlSEQ=') },
+    { label: 'Servidor 3', url: PJ_EMBED2('telefe.html') },
+  ],
+  'el-trece': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://live-01-02-eltrece.vodgc.net/eltrecetv/index.m3u8` },
+    { label: 'Servidor 2', url: PJ_EMBED('eltrece.html') },
+    { label: 'Servidor 3', url: PJ_EMBED2('eltrece.html') },
+  ],
+  'tn': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://live-01-01-tn.vodgc.net/TN24/index.m3u8` },
+    { label: 'Servidor 2', url: PJ_CVATT('VG9kb05vdGljaWFz') },
+  ],
+  'tv-publica': [
+    { label: 'Servidor 1', url: PJ_EMBED('tvpublica.html') },
+    { label: 'Servidor 2', url: PJ_CVATT('Q2FuYWw3') },
+  ],
+  'america': [
+    { label: 'Servidor 1', url: PJ_CVATT('QW1lcmljYVRW') },
+    { label: 'Servidor 2', url: `${PJ_BASE}americatv.html?1` },
+  ],
+  'c5n': [
+    { label: 'Servidor 1', url: PJ_CVATT('QzVO') },
+  ],
+  'cronica': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q3JvbmljYVRW') },
+  ],
+  'canal-nueve': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2FuYWw5') },
+    { label: 'Servidor 2', url: 'https://player.twitch.tv/?channel=elnueveenvivo&parent=pelisjuanita.com' },
+  ],
+  'ln': [
+    { label: 'Servidor 1', url: PJ_CVATT('TGFfTmFjaW9u') },
+  ],
+  'a24': [
+    { label: 'Servidor 1', url: PJ_CVATT('QW1lcmljYTI0') },
+  ],
+  'canal-26': [
+    { label: 'Servidor 1', url: PJ_CVATT('MjZfVFZfSEQ') },
+  ],
+  'telefe-rosario': [
+    { label: 'Servidor 1', url: `${PJ_BASE}telefe-rosario.php` },
+    { label: 'Servidor 2', url: PJ_CVATT('Q2FuYWxfNV9Sb3Nhcmlv') },
+  ],
+  'canal-doce': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2FuYWxfMTJfQ0JB') },
+  ],
+  'el-tres': [
+    { label: 'Servidor 1', url: `${PJ_BASE}eltres.php` },
+  ],
+  'encuentro': [
+    { label: 'Servidor 1', url: PJ_CVATT('RW5jdWVudHJv') },
+    { label: 'Servidor 2', url: `${PJ_BASE}f.html?get=https://538d0bde28ccf.streamlock.net/live-cont.ar/encuentro/chunklist_w2142228384.m3u8?WebM3UCL` },
+  ],
+  'paka-paka': [
+    { label: 'Servidor 1', url: PJ_CVATT('UEFLQV9QQUtB') },
+  ],
+  'baby-tv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=BABY_TV` },
+    { label: 'Servidor 2', url: PJ_CVATT('QmFieVRW') },
+  ],
+  'el-gourmet': [
+    { label: 'Servidor 1', url: PJ_CVATT('R291cm1ldA==') },
+    { label: 'Servidor 2', url: PJ_EMBED('elgourmet.html') },
+  ],
+  'cinecanal': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2luZWNhbmFsSEQ=') },
+    { label: 'Servidor 2', url: PJ_EMBED('cinecanal.html') },
+  ],
+  'cine-ar': [
+    { label: 'Servidor 1', url: PJ_CVATT('SU5DQUFfVHY=') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=CINE_AR` },
+  ],
+  'space': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=SPACE` },
+    { label: 'Servidor 2', url: PJ_EMBED('space.html') },
+  ],
+  'star-channel': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=STAR` },
+    { label: 'Servidor 2', url: PJ_EMBED('starchannel.html') },
+  ],
+  'volver': [
+    { label: 'Servidor 1', url: PJ_CVATT('Vm9sdmVy') },
+  ],
+  'ciudad-magazine': [
+    { label: 'Servidor 1', url: PJ_CVATT('TWFnYXppbmU=') },
+  ],
+  'tooncast': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TOONCAST` },
+    { label: 'Servidor 2', url: `https://embed.ksdjugfsddeports.com/embed/tooncast.html` },
+  ],
+  'diputados-tv': [
+    { label: 'Servidor 1', url: PJ_CVATT('RGlwdXRhZG9zX1RW') },
+  ],
+  'ip-noticias': [
+    { label: 'Servidor 1', url: PJ_CVATT('SW52ZXN0aWdhY2lvbl9QZXJpb2Rpc3RpY2E=') },
+  ],
+  'metro': [
+    { label: 'Servidor 1', url: PJ_CVATT('TWV0cm8') },
+  ],
+  'telemax': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://stream-gtlc.telecentro.net.ar/hls/telemaxhls/main.m3u8?PlaylistM3UCL` },
+    { label: 'Servidor 2', url: PJ_CVATT('VGVsZW1heA') },
+  ],
+  'argentinisima': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://stream1.sersat.com/hls/argentinisima.m3u8` },
+    { label: 'Servidor 2', url: PJ_CVATT('QXJnZW50aW5pc2ltYQ') },
+  ],
+  'nettv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://unlimited1-us.dps.live/nettv/nettv.smil/playlist.m3u8` },
+    { label: 'Servidor 2', url: PJ_CVATT('TmV0X1RW') },
+  ],
+  'canal-de-la-ciudad': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2FuYWxfZGVfbGFfY2l1ZGFk') },
+    { label: 'Servidor 2', url: 'https://vmf.edge-apps.net/embed/live.php?streamname=gcba_video4-100042&autoplay=false' },
+  ],
+  'chacra-tv': [
+    { label: 'Servidor 1', url: 'https://vmf.edge-apps.net/embed/live.php?streamname=gcba_video3-100042&autoplay=true' },
+  ],
+  'garage-tv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=//stream1.sersat.com/hls/garagetv.m3u8` },
+    { label: 'Servidor 2', url: PJ_CVATT('RWxfR2FyYWdl') },
+  ],
+  'canal-luz': [
+    { label: 'Servidor 1', url: 'https://vmf.edge-apps.net/embed/live.php?streamname=canal_luz01-100009&autoplay=0&loop=0' },
+  ],
+  'orbe-21': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=aHR0cHM6Ly9zdHJlYW0uYXJjYXN0Lm5ldDo0NDQzL2NhbmFsMjEvbmdycDpjYW5hbDIxX2FsbC9jaHVua2xpc3RfdzExNzk4OTM3NjNfYjIyMTE4NDAubTN1OA==` },
+  ],
+  'cm': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=CM` },
+    { label: 'Servidor 2', url: PJ_CVATT('Q00=') },
+  ],
+  'quiero': [
+    { label: 'Servidor 1', url: PJ_CVATT('UXVpZXJvX0hE') },
+  ],
+  'cumbia-mix': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=aHR0cHM6Ly9jbG91ZC50dm9taXguY29tL0NVTUJJQU1JWC9pbmRleC5tM3U4` },
+  ],
+  'musica-top': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://stream-gtlc.telecentro.net.ar/hls/musictophls/main.m3u8` },
+  ],
+  'unife': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=aHR0cHM6Ly9jZG4ubXljbG91ZHN0cmVhbS5pby9obHMvbGl2ZS9icm9hZGNhc3QvcGd2NWtlcmsvbW9uby5tM3U4` },
+  ],
+
+  // ── Deportes — ESPN 1–7 desde pelisjuanita (otros ESPN) ───────────────────
+  'espn': [
+    { label: 'Servidor 1', url: PJ_CVATT('RVNQTjJIRA') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=ESPN` },
+    { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=espn' },
+  ],
+  'espn-2': [
+    { label: 'Servidor 1', url: PJ_CVATT('RVNQTjJfQXJn') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=ESPN_2` },
+    { label: 'Servidor 3', url: PJ_EMBED('espn2.html') },
+  ],
+  'espn-3': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=ESPN_3` },
+    { label: 'Servidor 2', url: PJ_CVATT('RVNQTjM') },
+    { label: 'Servidor 3', url: PJ_EMBED('espn3.html') },
+  ],
+  'espn-4': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=ESPN_4` },
+    { label: 'Servidor 2', url: PJ_CVATT('RVNQTkhE') },
+    { label: 'Servidor 3', url: PJ_EMBED('espn4.html') },
+  ],
+  'espn-5': [
+    { label: 'Servidor 1', url: PJ_CVATT('RVNQTjQ=') },
+    { label: 'Servidor 2', url: PJ_EMBED('espn5.html') },
+    { label: 'Servidor 3', url: 'https://deportelibre.space/canales/espn5/op2.php' },
+  ],
+  'espn-6': [
+    { label: 'Servidor 1', url: PJ_CVATT('Rm94U3BvcnRzM19VWQ==') },
+    { label: 'Servidor 2', url: PJ_EMBED('espn6.html') },
+    { label: 'Servidor 3', url: 'https://deportelibre.space/canales/espn6/op2.php' },
+  ],
+  'espn-7': [
+    { label: 'Servidor 1', url: PJ_CVATT('Rm94U3BvcnRzMl9VWQ==') },
+    { label: 'Servidor 2', url: PJ_EMBED('espn7.html') },
+    { label: 'Servidor 3', url: 'https://deportelibre.space/canales/espn7/op2.php' },
+  ],
+  'deportv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=DEPORTV` },
+    { label: 'Servidor 2', url: PJ_CVATT('RGVwb3JUVkhE') },
+  ],
+  'fox-sports': [
+    { label: 'Servidor 1', url: PJ_CVATT('Rm94U3BvcnRz') },
+    { label: 'Servidor 2', url: 'https://la14hd.com/vivo/canales.php?stream=foxsports' },
+    { label: 'Servidor 3', url: PJ_EMBED('foxsports.html') },
+  ],
+  'fox-sports-2': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Fox_Sports_2` },
+    { label: 'Servidor 2', url: PJ_CVATT('Rm94U3BvcnRzMkhE') },
+    { label: 'Servidor 3', url: PJ_EMBED('foxsports2.htm') },
+  ],
+  'fox-sports-3': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Fox_Sports_3` },
+    { label: 'Servidor 2', url: PJ_CVATT('Rm94U3BvcnRzM0hE') },
+    { label: 'Servidor 3', url: PJ_EMBED('foxsports3.html') },
+  ],
+  'tyc-sports': [
+    { label: 'Servidor 1', url: PJ_CVATT('VHlDU3BvcnQ') },
+    { label: 'Servidor 2', url: 'https://la14hd.com/vivo/canales.php?stream=tycsports' },
+    { label: 'Servidor 3', url: PJ_EMBED('tycsports.html') },
+  ],
+  'tyc-sports-internacional': [
+    { label: 'Servidor 1', url: PJ_CVATT('VHlDX0ludGVybmFjaW9uYWw=') },
+  ],
+  'tnt-sports': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
+    { label: 'Servidor 2', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=tntsports' },
+  ],
+  'tnt-sports-arg': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
+    { label: 'Servidor 2', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=tntsports' },
+  ],
+  'nba-tv': [
+    { label: 'Servidor 1', url: PJ_CVATT('TkJBX1RW') },
+  ],
+  'nba-tv2': [
+    { label: 'Servidor 1', url: PJ_CVATT('TkJBX1RW') },
+  ],
+  'tudn': [
+    { label: 'Servidor 1', url: 'https://embed.saohgdasregions.fun/embed/tudn.html' },
+  ],
+  'formula-1': [
+    { label: 'Servidor 1', url: 'https://embed.ksdjugfsddeports.com/embed2/daznf1.html' },
+    { label: 'Servidor 2', url: 'https://dtvlivegratis.com/cn.php?id=DAZN_F1' },
+  ],
+
+  // ── Cable Internacional ───────────────────────────────────────────────────
+  'a-e': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=AE` },
+    { label: 'Servidor 2', url: PJ_CVATT('QUVIRA==') },
+  ],
+  'amc': [
+    { label: 'Servidor 1', url: PJ_CVATT('QU1D') },
+    { label: 'Servidor 2', url: PJ_EMBED('amc.html') },
+  ],
+  'animal-planet': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=ANIMAL_PLANET` },
+    { label: 'Servidor 2', url: PJ_EMBED('animalplanet.html') },
+  ],
+  'axn': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=AXN` },
+    { label: 'Servidor 2', url: PJ_CVATT('QVHOSEI=') },
+    { label: 'Servidor 3', url: PJ_EMBED('axn.html') },
+  ],
+  'cartoon-network': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=CARTOON` },
+    { label: 'Servidor 2', url: PJ_EMBED('cartoonnetwork.html') },
+  ],
+  'cartoonito': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=CARTOONITO` },
+    { label: 'Servidor 2', url: PJ_EMBED('cartoonito.html') },
+  ],
+  'cinemax': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=CINEMAX` },
+    { label: 'Servidor 2', url: PJ_CVATT('Q2luZW1heA==') },
+    { label: 'Servidor 3', url: PJ_EMBED('cinemax.htm') },
+  ],
+  'comedy-central': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=COMEDY_CENTRAL` },
+    { label: 'Servidor 2', url: PJ_EMBED('comedycentral.html') },
+  ],
+  'discovery-channel': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=DISCOVERY_CHANNEL_BACKUP` },
+    { label: 'Servidor 2', url: PJ_CVATT('RGlzY292ZXJ5SEQ=') },
+    { label: 'Servidor 3', url: PJ_EMBED('discoverychannel.html') },
+  ],
+  'discovery-h-h': [
+    { label: 'Servidor 1', url: PJ_EMBED('discoveryhyh.html') },
+  ],
+  'discovery-id': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Discovery_ID` },
+    { label: 'Servidor 2', url: PJ_EMBED('idinvestigation.html') },
+  ],
+  'discovery-kids': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Discovery_KIDS` },
+    { label: 'Servidor 2', url: PJ_EMBED('discoverykids.html') },
+  ],
+  'discovery-theater': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Discovery_THEATER` },
+    { label: 'Servidor 2', url: PJ_EMBED('discoverytheater.html') },
+  ],
+  'discovery-tlc': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Discovery_TLC` },
+    { label: 'Servidor 2', url: PJ_EMBED('discoverytlc.html') },
+  ],
+  'discovery-world': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=Discovery_WORLD` },
+  ],
+  'disney-channel': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=DISNEY` },
+    { label: 'Servidor 2', url: PJ_EMBED('disneychannel.html') },
+  ],
+  'disney-jr': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=DISNEY_JR` },
+    { label: 'Servidor 2', url: PJ_EMBED('disneyjr.html') },
+  ],
+  'dreamworks': [
+    { label: 'Servidor 1', url: PJ_CVATT('RHJlYW13b3Jrcw==') },
+  ],
+  'e-entertaiment': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=CANAL_E` },
+    { label: 'Servidor 2', url: PJ_CVATT('RV9FbnRlcnRhaW5tZW50X1RlbGV2aXNpb24=') },
+  ],
+  'fox-news': [
+    { label: 'Servidor 1', url: PJ_CVATT('Rm94X05ld3M=') },
+  ],
+  'fxhd': [
+    { label: 'Servidor 1', url: PJ_CVATT('RlhIRA==') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=FX` },
+    { label: 'Servidor 3', url: PJ_EMBED('fx.html') },
+  ],
+  'hbo': [
+    { label: 'Servidor 1', url: PJ_CVATT('SEJPSEQ=') },
+  ],
+  'hbo-2': [
+    { label: 'Servidor 1', url: PJ_CVATT('SEJPXzI=') },
+  ],
+  'hbo-family': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HBO_FAMILY` },
+    { label: 'Servidor 2', url: PJ_CVATT('SEJPX0ZhbWlseQ==') },
+  ],
+  'hbo-mundi': [
+    { label: 'Servidor 1', url: PJ_CVATT('SEJPX011bmRp') },
+  ],
+  'hbo-plus': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HBO_PLUS` },
+    { label: 'Servidor 2', url: PJ_CVATT('SEJPX1BsdXM=') },
+  ],
+  'hbo-pop': [
+    { label: 'Servidor 1', url: PJ_CVATT('SEJPX1BPUA==') },
+  ],
+  'hbo-signature': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HBO_SIGNATURE` },
+    { label: 'Servidor 2', url: PJ_CVATT('SEJPX1NpZ25hdHVyZQ==') },
+  ],
+  'hbo-xtreme': [
+    { label: 'Servidor 1', url: PJ_CVATT('SEJPX0V4dHJlbWU=') },
+  ],
+  'history': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HISTORY` },
+    { label: 'Servidor 2', url: PJ_CVATT('SGlzdG9yeUhE') },
+    { label: 'Servidor 3', url: PJ_EMBED('history.html') },
+  ],
+  'history-2': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HISTORY2` },
+    { label: 'Servidor 2', url: PJ_EMBED('history2.html') },
+  ],
+  'htv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=HTV` },
+    { label: 'Servidor 2', url: PJ_CVATT('SFRW') },
+  ],
+  'lifetime': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=LIFETIME` },
+    { label: 'Servidor 2', url: PJ_CVATT('TGlmZXRpbWU=') },
+  ],
+  'mtv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=MTV` },
+    { label: 'Servidor 2', url: PJ_CVATT('TVRWX0hE') },
+    { label: 'Servidor 3', url: PJ_EMBED('mtv.html') },
+  ],
+  'mtv-00s': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=MTV_00s` },
+    { label: 'Servidor 2', url: PJ_CVATT('TVRWMDA=') },
+  ],
+  'national-geographic': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=NAT_GEO` },
+    { label: 'Servidor 2', url: PJ_EMBED('natgeo.html') },
+  ],
+  'nick': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=NICK` },
+    { label: 'Servidor 2', url: PJ_EMBED('nick.html') },
+  ],
+  'nick-jr': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=NICK_JR` },
+    { label: 'Servidor 2', url: PJ_EMBED('nickjr.html') },
+  ],
+  'sony-channel': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=SONY` },
+    { label: 'Servidor 2', url: PJ_CVATT('U29ueUhE') },
+    { label: 'Servidor 3', url: PJ_EMBED('sony.htm') },
+  ],
+  'studio-universal': [
+    { label: 'Servidor 1', url: PJ_CVATT('U3R1ZGlvX1VuaXZlcnNhbA==') },
+    { label: 'Servidor 2', url: PJ_EMBED('studiouniversal.html') },
+    { label: 'Servidor 3', url: PJ_EMBED2('studiouniversal.html') },
+  ],
+  'tcm': [
+    { label: 'Servidor 1', url: PJ_CVATT('VENN') },
+  ],
+  'tnt-hd': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT` },
+    { label: 'Servidor 2', url: PJ_CVATT('VE5UX0hEX0FyZw==') },
+    { label: 'Servidor 3', url: PJ_EMBED('tnt.html') },
+  ],
+  'tnt-novelas': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_NOVELAS` },
+    { label: 'Servidor 2', url: PJ_EMBED('tntnovelas.html') },
+  ],
+  'tnt-series': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_SERIES` },
+    { label: 'Servidor 2', url: PJ_EMBED('tntseries.htm') },
+  ],
+  'universal-cinema': [
+    { label: 'Servidor 1', url: PJ_CVATT('VW5pdmVyc2FsX0NpbmVtYQ==') },
+    { label: 'Servidor 2', url: 'https://embed.saohgdasregions.fun/embed/universalcinema.html' },
+  ],
+  'universal-tv': [
+    { label: 'Servidor 1', url: PJ_CVATT('VW5pdmVyc2FsX0NoYW5uZWxfSEQ=') },
+    { label: 'Servidor 2', url: PJ_EMBED('universalchannel.html') },
+    { label: 'Servidor 3', url: PJ_EMBED2('universalchannel.html') },
+  ],
+  'usa-network': [
+    { label: 'Servidor 1', url: PJ_CVATT('VVNBX05ldHdvcms=') },
+  ],
+  'warner': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=WARNER` },
+    { label: 'Servidor 2', url: PJ_CVATT('V2FybmVySEQ=') },
+    { label: 'Servidor 3', url: PJ_EMBED2('warnerchannel.html') },
+  ],
+  'adult-swim': [
+    { label: 'Servidor 1', url: PJ_CVATT('QWR1bHRfU3dpbQ==') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=ADULT_SWIM` },
+  ],
+
+  // ── Noticias internacionales ──────────────────────────────────────────────
+  'france-24-espanol': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://live.france24.com/hls/live/2037220-b/F24_ES_HI_HLS/master_5000.m3u8` },
+  ],
+  'tv5-monde': [
+    { label: 'Servidor 1', url: PJ_CVATT('VFY1X01vbmRl') },
+  ],
+  'rai': [
+    { label: 'Servidor 1', url: PJ_CVATT('UkFJ') },
+  ],
+  'dw': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8` },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=DW` },
+  ],
+  'rt-en-espanol': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://rt-esp.rttv.com/live/rtesp/playlist.m3u8` },
+  ],
+  'telesur': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TELESUR` },
+    { label: 'Servidor 2', url: PJ_CVATT('VGVsZXN1cg==') },
+  ],
+  'arirang': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=aHR0cHM6Ly9hbWRsaXZlLWNoMDEtY3RuZC1jb20uYWthbWFpemVkLm5ldC9hcmlyYW5nXzFjaC9zbWlsOmFyaXJhbmdfMWNoLnNtaWwvY2h1bmtsaXN0X2I2NTYwMDBfc2xlbmcubTN1OA==` },
+  ],
+
+  // ── España ────────────────────────────────────────────────────────────────
+  'antena-3': [
+    { label: 'Servidor 1', url: PJ_CVATT('QW50ZW5hXzM=') },
+    { label: 'Servidor 2', url: PJ_EMBED('antena3.html') },
+  ],
+  'tve-internacional': [
+    { label: 'Servidor 1', url: `${PJ_BASE}f.html?get=https://ztnr.rtve.es/ztnr/1694255.m3u8?PlaylistM3UCL` },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=TVE` },
+    { label: 'Servidor 3', url: PJ_CVATT('VFZfRXNwYW5h') },
+  ],
+  'hola-tv': [
+    { label: 'Servidor 1', url: PJ_CVATT('SG9sYV9UVg==') },
+  ],
+
+  // ── México / Latinos ──────────────────────────────────────────────────────
+  'telemundo': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TELEMUNDO_52` },
+    { label: 'Servidor 2', url: PJ_CVATT('VGVsZW11bmRvX0hE') },
+  ],
+  'estrella-tv': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=ESTRELLAS` },
+    { label: 'Servidor 2', url: PJ_CVATT('Q2FuYWxfZGVfbGFzX2VzdHJlbGxhcw==') },
+  ],
+  'golden': [
+    { label: 'Servidor 1', url: PJ_CVATT('R29sZGVu') },
+    { label: 'Servidor 2', url: PJ_EMBED('goldenpremier2.html') },
+  ],
+
+  // ── Colombia ──────────────────────────────────────────────────────────────
+  'rcn': [
+    { label: 'Servidor 1', url: PJ_EMBED('rcn.html') },
+  ],
+
+  // ── Uruguay ───────────────────────────────────────────────────────────────
+  'canal-10-uruguayo': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2FuYWwxMF9VUlU=') },
+  ],
+  'canal-4-uruguay': [
+    { label: 'Servidor 1', url: PJ_CVATT('Q2FuYWw0X1VSVQ==') },
+  ],
+  'vtv': [
+    { label: 'Servidor 1', url: PJ_CVATT('VlRWX0hE') },
+  ],
+  'vtv-plus': [
+    { label: 'Servidor 1', url: PJ_CVATT('VlRWX1BsdXNfSEQ') },
+    { label: 'Servidor 2', url: 'https://la14hd.com/vivo/canales.php?stream=vtvplus' },
+  ],
+  'charrua-tv': [
+    { label: 'Servidor 1', url: 'https://player.twitch.tv?autoplay=true&channel=charruatvcanal&height=100%&muted=true&parent=pelisjuanita.com' },
+  ],
+  'sun-channel': [
+    { label: 'Servidor 1', url: PJ_CVATT('U3VuX0NoYW5uZWw=') },
+  ],
+  'latele': [
+    { label: 'Servidor 1', url: PJ_CVATT('TEFfVEVMRV9DNA==') },
+  ],
+  'eurochannel': [
+    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=EUROCHANNEL` },
+    { label: 'Servidor 2', url: PJ_CVATT('RXVyb2NoYW5uZWw=') },
+  ],
+  'tv-chile': [
+    { label: 'Servidor 1', url: PJ_CVATT('VHZfQ2hpbGU=') },
+  ],
+};
+
 function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
+  // ── Canales de pelisjuanita (pj:slug) ─────────────────────────────────────
+  if (streamUrl.startsWith('pj:')) {
+    const slug = streamUrl.slice(3);
+    const opts = PJ_STREAMS[slug];
+    if (opts && opts.length > 0) return opts;
+    // fallback genérico si no hay entradas para el slug
+    return [{ label: 'Servidor 1', url: `${PJ_BASE}cvatt.html?get=${slug}` }];
+  }
+
+  // ── latamvidz1 (deportes con pelota-libre) ────────────────────────────────
   if (streamUrl.includes('latamvidz1.com/canal.php')) {
     const match = streamUrl.match(/stream=([^&]+)/);
     const stream = match ? match[1] : '';
@@ -19,10 +559,23 @@ function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
       { label: 'Servidor 3', url: `https://streamtpcloud.com/global1.php?stream=${stream}` },
     ];
   }
+
+  // ── Pluto TV ──────────────────────────────────────────────────────────────
+  if (streamUrl.includes('pluto.tv')) {
+    return [{ label: 'Principal', url: streamUrl }];
+  }
+
+  // ── Fallback genérico ─────────────────────────────────────────────────────
   return [{ label: 'Principal', url: streamUrl }];
 }
 
-const BLOCKED_DOMAINS = ['pelisjuanita.com', 'americatv.com.ar', 'youtube.com'];
+// Dominios que bloquean embedding
+const BLOCKED_DOMAINS = [
+  'americatv.com.ar',
+  'c5n.com',
+  'youtube.com',
+];
+
 const isLikelyBlocked = (url: string) => BLOCKED_DOMAINS.some(d => url.includes(d));
 
 export function VideoPlayer({ channel, channels, onBack, onChannelChange }: VideoPlayerProps) {
@@ -375,7 +928,11 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
               <span className="vp-servers-label">Servidores:</span>
               <div className="vp-server-btns">
                 {streamOptions.map((opt, i) => (
-                  <button key={i} className={`vp-server-btn ${activeStream === i ? 'active' : ''}`} onClick={() => setActiveStream(i)}>
+                  <button
+                    key={i}
+                    className={`vp-server-btn ${activeStream === i ? 'active' : ''}`}
+                    onClick={() => setActiveStream(i)}
+                  >
                     {opt.label}
                   </button>
                 ))}

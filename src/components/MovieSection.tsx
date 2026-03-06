@@ -1,249 +1,127 @@
 import { useState, useMemo } from 'react';
-import { Play, Film, Star, Clock, ChevronLeft, ChevronRight, Search, X, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Play, Film, Tv, Star, ChevronLeft, ChevronRight, Search, X, ArrowLeft, Maximize2 } from 'lucide-react';
 
-export interface PlutoMovie {
+// ─── Tipos ───────────────────────────────────────────────────────────────────
+export interface PJMovie {
   id: string;
   slug: string;
   title: string;
   year: number;
   genre: string;
-  rating: string;
-  duration: string;
-  description: string;
-  poster: string;
   imdb?: string;
+  poster: string;
+  type: 'movie' | 'series';
 }
 
-const PLUTO_MOVIE = (slug: string) => `https://pluto.tv/on-demand/movies/${slug}`;
+// URLs embed de pelisjuanita.com
+const PJ_MOVIE_URL  = (slug: string) => `https://pelisjuanita.com/movies/pelicula/${slug}`;
+const PJ_SERIES_URL = (slug: string) => `https://pelisjuanita.com/series/ver-serie/${slug}`;
 
-// Posters via https://image.tmdb.org/t/p/w500{path} — paths verificados manualmente
-export const plutoMovies: PlutoMovie[] = [
-  // ── Acción ─────────────────────────────────────────────────────────────────
-  {
-    id:'1', slug:'die-hard-1988-1-1', title:'Die Hard', year:1988, genre:'Acción', rating:'R', duration:'2h 11m', imdb:'8.2',
-    description:'Un detective de Nueva York enfrenta a terroristas en un rascacielos de L.A. en Nochebuena.',
-    poster:'https://image.tmdb.org/t/p/w500/yFihWxQcmqcaBR31QM6Y8gT6aYV.jpg',
-  },
-  {
-    id:'2', slug:'die-hard-2-1990-1-1', title:'Die Hard 2', year:1990, genre:'Acción', rating:'R', duration:'2h 4m', imdb:'7.1',
-    description:'John McClane lucha por salvar a su esposa cuando terroristas toman el aeropuerto Dulles.',
-    poster:'https://image.tmdb.org/t/p/w500/6p9YDOoQXhgBi5RHOLfmX4UzE2U.jpg',
-  },
-  {
-    id:'3', slug:'robocop-1987-1-1', title:'RoboCop', year:1987, genre:'Acción', rating:'R', duration:'1h 42m', imdb:'7.5',
-    description:'Un policía asesinado y resucitado como cyborg lucha contra el crimen y descubre su pasado.',
-    poster:'https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg',
-  },
-  {
-    id:'4', slug:'speed-1994-1-1', title:'Speed', year:1994, genre:'Acción', rating:'R', duration:'1h 56m', imdb:'7.3',
-    description:'Un autobús bomba explotará si baja de 50 mph. Keanu Reeves y Sandra Bullock deben detenerlo.',
-    poster:'https://image.tmdb.org/t/p/w500/mFMvBVsNGDJQf7MaBJpqMrEbHH2.jpg',
-  },
-  {
-    id:'5', slug:'true-lies-1994-1-1', title:'True Lies', year:1994, genre:'Acción', rating:'R', duration:'2h 21m', imdb:'7.2',
-    description:'Un agente secreto debe salvar al mundo mientras intenta salvar su matrimonio.',
-    poster:'https://image.tmdb.org/t/p/w500/mUSdxrBpKqZc5hsTiybVXhc3Vcu.jpg',
-  },
-  {
-    id:'6', slug:'lethal-weapon-1987-1-1', title:'Arma Mortal', year:1987, genre:'Acción', rating:'R', duration:'1h 50m', imdb:'7.6',
-    description:'Dos detectives de L.A. muy diferentes forman una inesperada pero efectiva pareja.',
-    poster:'https://image.tmdb.org/t/p/w500/fgMDORG8maPcFRuU9pDFVxFIPmr.jpg',
-  },
-  {
-    id:'7', slug:'beverly-hills-cop-1984-1-1', title:'Superdetective en H.B.', year:1984, genre:'Acción', rating:'R', duration:'1h 45m', imdb:'7.3',
-    description:'Un detective de Detroit viaja a Beverly Hills para investigar el asesinato de su amigo.',
-    poster:'https://image.tmdb.org/t/p/w500/nOUPgBFJpLFSxGFN2R0IgWzl5ur.jpg',
-  },
-  {
-    id:'8', slug:'total-recall-1990-1-1', title:'Total Recall', year:1990, genre:'Acción', rating:'R', duration:'1h 53m', imdb:'7.5',
-    description:'Un obrero descubre que sus memorias son falsas y que en realidad es un espía encubierto.',
-    poster:'https://image.tmdb.org/t/p/w500/yAybOHVSVw1MImHpUmNAB0IFa9X.jpg',
-  },
-  {
-    id:'9', slug:'predator-1987-1-1', title:'Predator', year:1987, genre:'Acción', rating:'R', duration:'1h 47m', imdb:'7.8',
-    description:'Un equipo de élite comandado por Arnold Schwarzenegger es cazado por un alienígena en la selva.',
-    poster:'https://image.tmdb.org/t/p/w500/jHnkMJSvHJDwjUGGoMmVgdpFSiH.jpg',
-  },
-  {
-    id:'10', slug:'the-rock-1996-1-1', title:'La Roca', year:1996, genre:'Acción', rating:'R', duration:'2h 16m', imdb:'7.4',
-    description:'Alcatraz es tomada por ex-marines. Nicolas Cage y Sean Connery deben neutralizar la amenaza.',
-    poster:'https://image.tmdb.org/t/p/w500/csPmfLQHn9U0SEZCkk9UFXkF6Pk.jpg',
-  },
-  // ── Sci-Fi ──────────────────────────────────────────────────────────────────
-  {
-    id:'11', slug:'the-fifth-element-1997-1-1', title:'El Quinto Elemento', year:1997, genre:'Sci-Fi', rating:'PG-13', duration:'2h 6m', imdb:'7.6',
-    description:'En el siglo XXIII, un taxista se convierte en el último salvavidas del universo.',
-    poster:'https://image.tmdb.org/t/p/w500/fPtlCO1yQtnoLFrWMoBpBJnFRud.jpg',
-  },
-  {
-    id:'12', slug:'stargate-1994-1-1', title:'Stargate', year:1994, genre:'Sci-Fi', rating:'PG-13', duration:'1h 56m', imdb:'7.1',
-    description:'Una puerta estelar conecta la Tierra con un planeta dominado por un falso dios egipcio.',
-    poster:'https://image.tmdb.org/t/p/w500/s6k7GVmifCjEqXfDKiW0dCFvKFp.jpg',
-  },
-  {
-    id:'13', slug:'the-terminator-1984-1-1', title:'Terminator', year:1984, genre:'Sci-Fi', rating:'R', duration:'1h 47m', imdb:'8.1',
-    description:'Un cyborg asesino viaja al pasado para eliminar a la madre del futuro líder de la resistencia.',
-    poster:'https://image.tmdb.org/t/p/w500/qvktm0BHcnmDpul4Hz01GIazWPr.jpg',
-  },
-  {
-    id:'14', slug:'independence-day-1996-1-1', title:'Día de la Independencia', year:1996, genre:'Sci-Fi', rating:'PG-13', duration:'2h 25m', imdb:'7.0',
-    description:'La humanidad enfrenta la mayor invasión alienígena de la historia el 4 de julio.',
-    poster:'https://image.tmdb.org/t/p/w500/v3DpnMBSHY9sT2OlRWA6FO0ZCZE.jpg',
-  },
-  {
-    id:'15', slug:'universal-soldier-1992-1-1', title:'Soldado Universal', year:1992, genre:'Sci-Fi', rating:'R', duration:'1h 42m', imdb:'5.7',
-    description:'Dos soldados muertos en Vietnam son resucitados como supersoldados androides.',
-    poster:'https://image.tmdb.org/t/p/w500/g8qdRt24MNHtFMnTFqhXXRMYxkT.jpg',
-  },
-  // ── Thriller ────────────────────────────────────────────────────────────────
-  {
-    id:'16', slug:'la-confidential-1997-1-1', title:'L.A. Confidential', year:1997, genre:'Thriller', rating:'R', duration:'2h 18m', imdb:'8.2',
-    description:'Tres policías de Los Ángeles investigan una conspiración de corrupción en los años 50.',
-    poster:'https://image.tmdb.org/t/p/w500/n4GJFGzsc7NinI1VeGDXIcQjtU2.jpg',
-  },
-  {
-    id:'17', slug:'se7en-1995-1-1', title:'Se7en', year:1995, genre:'Thriller', rating:'R', duration:'2h 7m', imdb:'8.6',
-    description:'Dos detectives persiguen a un asesino que usa los siete pecados capitales como motivo.',
-    poster:'https://image.tmdb.org/t/p/w500/6yoghtyTpznpBik8EngEmJskVUO.jpg',
-  },
-  {
-    id:'18', slug:'the-usual-suspects-1995-1-1', title:'Sospechosos de Siempre', year:1995, genre:'Thriller', rating:'R', duration:'1h 46m', imdb:'8.5',
-    description:'Un interrogatorio revela la historia de cinco criminales y el misterioso Kaiser Soze.',
-    poster:'https://image.tmdb.org/t/p/w500/eFBvqqMHRHNrBbFPHvJFRQHRCNF.jpg',
-  },
-  {
-    id:'19', slug:'heat-1995-1-1', title:'Heat', year:1995, genre:'Thriller', rating:'R', duration:'2h 50m', imdb:'8.3',
-    description:'Un detective obsesionado persigue a un maestro ladrón en una confrontación épica en L.A.',
-    poster:'https://image.tmdb.org/t/p/w500/rrGCMAfTBsKCnlJ7SKpvBbBfJlh.jpg',
-  },
-  {
-    id:'20', slug:'training-day-2001-1-1', title:'Training Day', year:2001, genre:'Thriller', rating:'R', duration:'2h 2m', imdb:'7.7',
-    description:'Un novato aprende las reglas corruptas de las calles de Los Ángeles de su veterano mentor.',
-    poster:'https://image.tmdb.org/t/p/w500/yjReg4bUF6iBEJIU2PuOCj5WUHB.jpg',
-  },
-  {
-    id:'39', slug:'chinatown-1974-1-1', title:'Chinatown', year:1974, genre:'Thriller', rating:'R', duration:'2h 10m', imdb:'8.1',
-    description:'Un detective privado de L.A. descubre una conspiración más profunda de lo esperado.',
-    poster:'https://image.tmdb.org/t/p/w500/2rcHMej1yJjPZNIHYKaFRVsOgwS.jpg',
-  },
-  // ── Drama ───────────────────────────────────────────────────────────────────
-  {
-    id:'21', slug:'rocky-1976-1-1', title:'Rocky', year:1976, genre:'Drama', rating:'PG', duration:'1h 59m', imdb:'8.1',
-    description:'Un boxeador de segunda categoría consigue una oportunidad de combatir al campeón mundial.',
-    poster:'https://image.tmdb.org/t/p/w500/2vmMOMCLGlRxHxwsWfcJM15oJy0.jpg',
-  },
-  {
-    id:'22', slug:'scarface-1983-1-1', title:'Scarface', year:1983, genre:'Drama', rating:'R', duration:'2h 50m', imdb:'8.3',
-    description:'Un inmigrante cubano construye un impero criminal en Miami hasta su trágica caída.',
-    poster:'https://image.tmdb.org/t/p/w500/iQ5ztdjvteGeboxtmRdXEChJOHh.jpg',
-  },
-  {
-    id:'23', slug:'goodfellas-1990-1-1', title:'Buenos Muchachos', year:1990, genre:'Drama', rating:'R', duration:'2h 26m', imdb:'8.7',
-    description:'Un aspirante a mafioso asciende en las filas del crimen organizado en Nueva York.',
-    poster:'https://image.tmdb.org/t/p/w500/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg',
-  },
-  {
-    id:'24', slug:'the-godfather-1972-1-1', title:'El Padrino', year:1972, genre:'Drama', rating:'R', duration:'2h 55m', imdb:'9.2',
-    description:'El patriarca de una familia mafiosa transfiere el control de su imperio a su reticente hijo.',
-    poster:'https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsLLeHCm3zJyp.jpg',
-  },
-  {
-    id:'25', slug:'casino-1995-1-1', title:'Casino', year:1995, genre:'Drama', rating:'R', duration:'2h 59m', imdb:'8.2',
-    description:'Las historias de un apostador, su esposa y un matón en los casinos de Las Vegas.',
-    poster:'https://image.tmdb.org/t/p/w500/9dHBKyxQQtIiUA8sQ5ib5nkotDP.jpg',
-  },
-  {
-    id:'26', slug:'taxi-driver-1976-1-1', title:'Taxi Driver', year:1976, genre:'Drama', rating:'R', duration:'1h 54m', imdb:'8.2',
-    description:'Un veterano de Vietnam trabaja de taxista nocturno en el Nueva York más oscuro.',
-    poster:'https://image.tmdb.org/t/p/w500/ekstpH614fwDX8DUln1a2Opz0N8.jpg',
-  },
-  // ── Comedia ─────────────────────────────────────────────────────────────────
-  {
-    id:'27', slug:'coming-to-america-1988-1-1', title:'Un Príncipe en N.Y.', year:1988, genre:'Comedia', rating:'R', duration:'1h 56m', imdb:'6.9',
-    description:'Un príncipe africano viaja a Nueva York para encontrar una esposa independiente.',
-    poster:'https://image.tmdb.org/t/p/w500/t0e27SYkTFNBHZhJKajfS5uFq6C.jpg',
-  },
-  {
-    id:'28', slug:'airplane-1980-1-1', title:'¿Y Dónde Está el Piloto?', year:1980, genre:'Comedia', rating:'PG', duration:'1h 28m', imdb:'7.7',
-    description:'Un pasajero fóbico debe aterrizar un avión cuando la tripulación queda incapacitada.',
-    poster:'https://image.tmdb.org/t/p/w500/qNOjPqgnqOZGf7HpkCiMC2QYNXN.jpg',
-  },
-  {
-    id:'29', slug:'back-to-the-future-1985-1-1', title:'Volver al Futuro', year:1985, genre:'Comedia', rating:'PG', duration:'1h 56m', imdb:'8.5',
-    description:'Un adolescente viaja al 1955 en un DeLorean y debe lograr que sus padres se enamoren.',
-    poster:'https://image.tmdb.org/t/p/w500/fNOH9f1aA7XRTzl1sAOx9iF553Q.jpg',
-  },
-  {
-    id:'30', slug:'ghostbusters-1984-1-1', title:'Los Cazafantasmas', year:1984, genre:'Comedia', rating:'PG', duration:'1h 45m', imdb:'7.8',
-    description:'Tres parapsicólogos crean una empresa cazadora de fantasmas en Nueva York.',
-    poster:'https://image.tmdb.org/t/p/w500/uMeJeO8l5vwD9WarYqGLaOFn8yz.jpg',
-  },
-  {
-    id:'31', slug:'ferris-buellers-day-off-1986-1-1', title:"Ferris Bueller's Day Off", year:1986, genre:'Comedia', rating:'PG-13', duration:'1h 43m', imdb:'7.8',
-    description:'Un adolescente convence a sus amigos de faltar a clase para vivir una aventura en Chicago.',
-    poster:'https://image.tmdb.org/t/p/w500/Ci4GC11nSquKNKpBiJAXkHGJcsR.jpg',
-  },
-  // ── Terror ──────────────────────────────────────────────────────────────────
-  {
-    id:'32', slug:'halloween-1978-1-1', title:'Halloween', year:1978, genre:'Terror', rating:'R', duration:'1h 31m', imdb:'7.7',
-    description:'Un asesino en serie escapa del manicomio y regresa a su pueblo para continuar matando.',
-    poster:'https://image.tmdb.org/t/p/w500/qVpCaBcnjECehWME1lFa1w5Kz8.jpg',
-  },
-  {
-    id:'33', slug:'a-nightmare-on-elm-street-1984-1-1', title:'Pesadilla en Elm Street', year:1984, genre:'Terror', rating:'R', duration:'1h 31m', imdb:'7.4',
-    description:'Freddy Krueger acecha a adolescentes en sus sueños para matarlos en la realidad.',
-    poster:'https://image.tmdb.org/t/p/w500/hXqhGaEzpDZYQYK8GYQpHpFSsHd.jpg',
-  },
-  {
-    id:'34', slug:'friday-the-13th-1980-1-1', title:'Viernes 13', year:1980, genre:'Terror', rating:'R', duration:'1h 35m', imdb:'6.4',
-    description:'Un grupo de monitores de campamento son asesinados misteriosamente en Crystal Lake.',
-    poster:'https://image.tmdb.org/t/p/w500/HtE3xZyM7oFBqjjphoGFMDBSySy.jpg',
-  },
-  {
-    id:'35', slug:'the-thing-1982-1-1', title:'La Cosa', year:1982, genre:'Terror', rating:'R', duration:'1h 49m', imdb:'8.2',
-    description:'Una criatura alienígena capaz de imitar cualquier forma de vida ataca una base antártica.',
-    poster:'https://image.tmdb.org/t/p/w500/tzGY49kseSE9QAKk47uuDGwnSCu.jpg',
-  },
-  {
-    id:'36', slug:'the-shining-1980-1-1', title:'El Resplandor', year:1980, genre:'Terror', rating:'R', duration:'2h 26m', imdb:'8.4',
-    description:'Un escritor y su familia pasan el invierno en un hotel aislado con un oscuro pasado.',
-    poster:'https://image.tmdb.org/t/p/w500/xazWoLealQwEgqZ89MLZklLZD3k.jpg',
-  },
-  // ── Western ─────────────────────────────────────────────────────────────────
-  {
-    id:'37', slug:'the-good-the-bad-and-the-ugly-1966-1-1', title:'El Bueno, El Malo y El Feo', year:1966, genre:'Western', rating:'R', duration:'2h 58m', imdb:'8.8',
-    description:'Tres hombres compiten por un tesoro enterrado en plena Guerra Civil americana.',
-    poster:'https://image.tmdb.org/t/p/w500/bX2xnavhMYjWDoZp1VM6VnU1xwe.jpg',
-  },
-  {
-    id:'38', slug:'tombstone-1993-1-1', title:'Tombstone', year:1993, genre:'Western', rating:'R', duration:'2h 10m', imdb:'7.8',
-    description:'Wyatt Earp y Doc Holliday se enfrentan a los Cowboys en Tombstone, Arizona.',
-    poster:'https://image.tmdb.org/t/p/w500/7VbwP3HhIBcCpP6VOjHLxbOrP0p.jpg',
-  },
-  {
-    id:'40', slug:'the-outlaw-josey-wales-1976-1-1', title:'El Fuera de la Ley', year:1976, genre:'Western', rating:'PG', duration:'2h 15m', imdb:'7.9',
-    description:'Un granjero busca venganza tras la muerte de su familia durante la Guerra Civil.',
-    poster:'https://image.tmdb.org/t/p/w500/wXqOcLqvZGPOliRCxMFr5fKbz4f.jpg',
-  },
+// ─── Catálogo de PELÍCULAS ────────────────────────────────────────────────────
+export const pjMovies: PJMovie[] = [
+  // Estrenos 2026
+  { id:'m1',  slug:'street-flow-3',                    title:'Flow callejero 3',                      year:2026, genre:'Drama',      imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/hm7ZSLYtAlrHFk8uMamXaVo1s3I.jpg',   type:'movie' },
+  { id:'m2',  slug:'one-mile-chapter-two',             title:'One Mile: Chapter Two',                 year:2026, genre:'Acción',     imdb:'9.0', poster:'https://image.tmdb.org/t/p/w500/3sjc9qXXmQoUWKQ3qIjS1nZaUJy.jpg',   type:'movie' },
+  { id:'m3',  slug:'acusada-2',                        title:'Acusada',                               year:2026, genre:'Drama',      imdb:'9.0', poster:'https://image.tmdb.org/t/p/w500/kkQJz9mhx9JHQbs8uRN86S6r4Ko.jpg',   type:'movie' },
+  { id:'m4',  slug:'el-engano-2',                      title:'El engaño',                             year:2026, genre:'Acción',     imdb:'6.3', poster:'https://image.tmdb.org/t/p/w500/uuIP7lRgzSjaZ4CT33WHfctLARs.jpg',   type:'movie' },
+  { id:'m5',  slug:'scream-7',                         title:'Scream 7',                              year:2026, genre:'Terror',     imdb:'6.1', poster:'https://image.tmdb.org/t/p/w500/hflipaW7mtfKZM9WFEyzUdFsgSk.jpg',   type:'movie' },
+  { id:'m6',  slug:'ice-skater',                       title:'Ice Skater',                            year:2026, genre:'Drama',      imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/k6NdbpdN3591xR18VAVfXYmY6P0.jpg',   type:'movie' },
+  { id:'m7',  slug:'cortafuego',                       title:'Cortafuego',                            year:2026, genre:'Acción',     imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/gqzIKAeBKkiwj5qz2oZCOuZKHPA.jpg',   type:'movie' },
+  { id:'m8',  slug:'pavane',                           title:'Pavana',                                year:2026, genre:'Drama',      imdb:'6.0', poster:'https://image.tmdb.org/t/p/w500/22RlxpIT4u4psfIx9tmtbPvgAbm.jpg',   type:'movie' },
+  { id:'m9',  slug:'one-mile-chapter-one',             title:'One Mile: Chapter One',                 year:2026, genre:'Acción',     imdb:'7.8', poster:'https://image.tmdb.org/t/p/w500/1GZaoYe0mQy211DgDSAxAXr30ul.jpg',   type:'movie' },
+  { id:'m10', slug:'the-dreadful',                     title:'The Dreadful',                          year:2026, genre:'Terror',     imdb:'7.5', poster:'https://image.tmdb.org/t/p/w500/hGH8Ji7pG2ytHxo7ABqHM3TpzFA.jpg',   type:'movie' },
+  { id:'m11', slug:'midwinter-break',                  title:'Midwinter Break',                       year:2026, genre:'Drama',      imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/vkMOruokVnD05xSiwI2hWBzG7UD.jpg',   type:'movie' },
+  { id:'m12', slug:'redux-redux',                      title:'Redux Redux',                           year:2026, genre:'Acción',     imdb:'6.5', poster:'https://image.tmdb.org/t/p/w500/9u7sUTYPPTxGCXbkcw8FTq50PnO.jpg',   type:'movie' },
+  { id:'m13', slug:'jugada-maestra',                   title:'Jugada maestra',                        year:2026, genre:'Comedia',    imdb:'6.3', poster:'https://image.tmdb.org/t/p/w500/75eegSmvQXEJulOE1oekOsbVgTU.jpg',   type:'movie' },
+  { id:'m14', slug:'paul-mccartney-hombre-a-la-fuga',  title:'Paul McCartney: Hombre a la fuga',      year:2026, genre:'Documental', imdb:'8.5', poster:'https://image.tmdb.org/t/p/w500/j6GhGmlEpWYwuY0ZfUPdtACTFdD.jpg',   type:'movie' },
+  { id:'m15', slug:'cold-storage',                     title:'Alerta extinción',                      year:2026, genre:'Comedia',    imdb:'4.7', poster:'https://image.tmdb.org/t/p/w500/aioKGmYADqq09GEIY9vPhK5xoza.jpg',   type:'movie' },
+  { id:'m16', slug:'avatar-fire-and-ash',              title:'Avatar: Fuego y ceniza',                year:2025, genre:'Sci-Fi',     imdb:'7.1', poster:'https://image.tmdb.org/t/p/w500/cf7hE1ifY4UNbS25tGnaTyyDrI2.jpg',   type:'movie' },
+  { id:'m17', slug:'shelter-el-protector',             title:'El Guardián: Último refugio',           year:2026, genre:'Acción',     imdb:'7.7', poster:'https://image.tmdb.org/t/p/w500/klvZs66SG19qmacdwxSRkdFQhQS.jpg',   type:'movie' },
+  { id:'m18', slug:'en-un-instante',                   title:'En un abrir y cerrar de ojos',          year:2026, genre:'Drama',      imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/bN130HxJYMXPDEIO03wtpdhwj6K.jpg',   type:'movie' },
+  { id:'m19', slug:'wuthering-heights-2',              title:'Cumbres Borrascosas',                   year:2026, genre:'Romance',    imdb:'6.7', poster:'https://image.tmdb.org/t/p/w500/afGUJcMBJloAUp9uC27MQiqkD7X.jpg',   type:'movie' },
+  { id:'m20', slug:'greenland-2-migration',            title:'Greenland 2',                           year:2026, genre:'Acción',     imdb:'6.8', poster:'https://image.tmdb.org/t/p/w500/q7aijAKE98Fcp6dgR6oWiUkFO2g.jpg',   type:'movie' },
+  { id:'m21', slug:'sin-piedad-2',                     title:'Sin piedad',                            year:2026, genre:'Acción',     imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/9zBNg8koM3fjUTPT7QeJHuGG2r9.jpg',   type:'movie' },
+  { id:'m22', slug:'terror-em-silent-hill-regresso-para-o-inferno', title:'Terror en Silent Hill: Regreso al infierno', year:2026, genre:'Terror', imdb:'5.5', poster:'https://image.tmdb.org/t/p/w500/fGSmcSIZGam07ihABhVtaQAzOyd.jpg', type:'movie' },
+  { id:'m23', slug:'hellfire',                         title:'Hellfire',                              year:2026, genre:'Acción',     imdb:'8.8', poster:'https://image.tmdb.org/t/p/w500/tQti9QTf13MfzNpXguijgNh7ojE.jpg',   type:'movie' },
+  { id:'m24', slug:'goat-la-cabra-que-cambio-el-juego',title:'GOAT: La cabra que cambió el juego',    year:2026, genre:'Acción',     imdb:'7.3', poster:'https://image.tmdb.org/t/p/w500/2yblKPC6ZKEU6iv9sEZ0jktjiTU.jpg',   type:'movie' },
+  { id:'m25', slug:'28-anos-despues-el-templo-de-los-huesos', title:'Exterminio: El templo de huesos', year:2026, genre:'Terror',   imdb:'5.9', poster:'https://image.tmdb.org/t/p/w500/2DTPapravB7kVBWjm6RsqEWyNqn.jpg',   type:'movie' },
+  { id:'m26', slug:'la-asistenta',                     title:'La asistenta',                          year:2025, genre:'Terror',     imdb:'7.1', poster:'https://image.tmdb.org/t/p/w500/A6S15iqfHpoit02leDfDVnpklys.jpg',   type:'movie' },
+  { id:'m27', slug:'whistle-el-silbido-del-mal',       title:'Whistle: El silbido del mal',           year:2026, genre:'Terror',     imdb:'4.5', poster:'https://image.tmdb.org/t/p/w500/otCoDQYnNy2x1QzTVn3JCp0jV4O.jpg',   type:'movie' },
+  { id:'m28', slug:'marty-supreme',                    title:'Marty Supreme',                         year:2026, genre:'Drama',      imdb:'8.0', poster:'https://image.tmdb.org/t/p/w500/a1GzWegsPpt7yzlMT366oP7DZUJ.jpg',   type:'movie' },
+  { id:'m29', slug:'hamnet',                           title:'Hamnet',                                year:2026, genre:'Drama',      imdb:'8.0', poster:'https://image.tmdb.org/t/p/w500/a9IQXoYCpsjqTOKXRTw1osLd5il.jpg',   type:'movie' },
+  { id:'m30', slug:'el-momento',                       title:'El Momento',                            year:2026, genre:'Comedia',    imdb:'5.8', poster:'https://image.tmdb.org/t/p/w500/mfV9E5hMcqu0Bc15W4RI0hx5gK0.jpg',   type:'movie' },
+  { id:'m31', slug:'good-luck-have-fun-dont-die',      title:'Buena suerte, diviértete, no mueras',   year:2026, genre:'Acción',     imdb:'7.5', poster:'https://image.tmdb.org/t/p/w500/dtEVoZBMuwlgz4mh4PA75eVbBM1.jpg',   type:'movie' },
+  { id:'m32', slug:'hermandad-estado-de-terror',       title:'Aviso general: Hermandad',              year:2026, genre:'Acción',     imdb:'4.8', poster:'https://image.tmdb.org/t/p/w500/xdyCFS4jUzp7kghoptaiYqir48X.jpg',   type:'movie' },
+  { id:'m33', slug:'reckless',                         title:'Reckless',                              year:2026, genre:'Comedia',    imdb:'6.2', poster:'https://image.tmdb.org/t/p/w500/76jjEatL53KYooIrDQK9wsk4rm1.jpg',   type:'movie' },
+  { id:'m34', slug:'los-hermanos-demolicion',          title:'Los hermanos demolición',               year:2026, genre:'Comedia',    imdb:'8.0', poster:'https://image.tmdb.org/t/p/w500/gbVwHl4YPSq6BcC92TQpe7qUTh6.jpg',   type:'movie' },
+  { id:'m35', slug:'el-botin',                         title:'El botín',                              year:2026, genre:'Acción',     imdb:'7.2', poster:'https://image.tmdb.org/t/p/w500/p4bW2sJKAwcHuLpfoZK7Zo63osA.jpg',   type:'movie' },
+  { id:'m36', slug:'killer-whale',                     title:'Killer Whale',                          year:2026, genre:'Acción',     imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/xC6zdIoIHjhOIFmjNyGgtzhuhiF.jpg',   type:'movie' },
+  { id:'m37', slug:'f-valentines-day',                 title:"F Valentine's Day",                     year:2026, genre:'Comedia',    imdb:'5.0', poster:'https://image.tmdb.org/t/p/w500/8zPExowfpfZOTpS1W4J7G27lH4H.jpg',   type:'movie' },
+  { id:'m38', slug:'el-tour-universitario-con-joe',    title:'El tour universitario con Joe',          year:2026, genre:'Comedia',    imdb:'8.0', poster:'https://image.tmdb.org/t/p/w500/zp5RN4grAHUeCc9B7LKZcuu6HH5.jpg',   type:'movie' },
+  { id:'m39', slug:'uf-solo-amigos',                   title:'¡Uf! ¿Solo amigos?',                    year:2026, genre:'Comedia',    imdb:'8.0', poster:'https://image.tmdb.org/t/p/w500/fDcHWsESmG7j8fnVbPxR6dQz0vA.jpg',   type:'movie' },
+  { id:'m40', slug:'solo-mio',                         title:'Solo Mio',                              year:2026, genre:'Comedia',    imdb:'7.5', poster:'https://image.tmdb.org/t/p/w500/fFjCz7pX9gZofqgbEnYxk3C1Ixo.jpg',   type:'movie' },
+  { id:'m41', slug:'la-meta-es-el-amor',               title:'La Meta es el Amor',                    year:2026, genre:'Comedia',    imdb:'7.5', poster:'https://image.tmdb.org/t/p/w500/eZRbRa0q9rKkPe0gfJ2a0NhygBX.jpg',   type:'movie' },
+  { id:'m42', slug:'el-show-de-los-muppets',           title:'El show de los Muppets',                year:2026, genre:'Comedia',    imdb:'7.6', poster:'https://image.tmdb.org/t/p/w500/o0o6aJQvyDXc5NHGhUpEOO2cvPX.jpg',   type:'movie' },
+  { id:'m43', slug:'un-hombre-por-semana',             title:'Un Hombre por Semana',                  year:2026, genre:'Comedia',    imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/ynrvcl6e3Ev0SGkpPeXdhfdv1Pt.jpg',   type:'movie' },
+  { id:'m44', slug:'my-boo-2',                         title:'My Boo 2',                              year:2025, genre:'Comedia',    imdb:'4.0', poster:'https://image.tmdb.org/t/p/w500/jCXbS2yCqHKPpaSAdTClGIW8FtO.jpg',   type:'movie' },
+  { id:'m45', slug:'wicked-one-wonderful-night',       title:'Wicked: One Wonderful Night',           year:2025, genre:'Musical',    imdb:'8.3', poster:'https://image.tmdb.org/t/p/w500/vI8gfZVhPnYo0gjK6vSP7p3idpV.jpg',   type:'movie' },
+  { id:'m46', slug:'la-tregua',                        title:'La tregua',                             year:2025, genre:'Drama',      imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/g1O3wEA0ZaigQG0RHx7zXeuWbSc.jpg',   type:'movie' },
+  { id:'m47', slug:'giant',                            title:'Giant',                                 year:2026, genre:'Drama',      imdb:'6.2', poster:'https://image.tmdb.org/t/p/w500/1KKmUdFulYDVSV31nQt9LVm3Oue.jpg',   type:'movie' },
+  { id:'m48', slug:'sundays',                          title:'Los domingos',                          year:2025, genre:'Drama',      imdb:'7.3', poster:'https://image.tmdb.org/t/p/w500/1K5HtixJ9O6gqmK61shhnMO4VSy.jpg',   type:'movie' },
+  { id:'m49', slug:'zootopia-2',                       title:'Zootrópolis 2',                         year:2026, genre:'Animación',  imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/2VF8ZJ8BL4CBxr6Y4KhwJ7yGSsY.jpg',   type:'movie' },
 ];
 
-const GENRES = ['Todos', 'Acción', 'Sci-Fi', 'Thriller', 'Drama', 'Comedia', 'Terror', 'Western'];
-const MOVIES_PER_PAGE = 24;
+// ─── Catálogo de SERIES ───────────────────────────────────────────────────────
+export const pjSeries: PJMovie[] = [
+  { id:'s1',  slug:'el-joven-sherlock',                        title:'El joven Sherlock',                       year:2026, genre:'Misterio',   imdb:'9.8', poster:'https://image.tmdb.org/t/p/w500/w426ObBzvHyTISiAqaeMujydmpi.jpg',   type:'series' },
+  { id:'s2',  slug:'vladimir',                                 title:'Vladimir',                                year:2026, genre:'Drama',      imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/cQhv0HrWrxXikH5R8d0tF1w3QHg.jpg',   type:'series' },
+  { id:'s3',  slug:'novio-a-la-carta',                         title:'Novio a la carta',                        year:2026, genre:'Romance',    imdb:'10.0',poster:'https://image.tmdb.org/t/p/w500/oK0cCVIP5EnxtDxFhGECQKiSyA7.jpg',   type:'series' },
+  { id:'s4',  slug:'ted',                                      title:'ted',                                     year:2024, genre:'Comedia',    imdb:'8.1', poster:'https://image.tmdb.org/t/p/w500/iKmLCDudQXXOZr16bB7ApT7jXo3.jpg',   type:'series' },
+  { id:'s5',  slug:'marshals-una-historia-de-yellowstone',     title:'Marshals: Una historia de Yellowstone',   year:2026, genre:'Western',    imdb:'8.3', poster:'https://image.tmdb.org/t/p/w500/nInfaveN1iFpRIcMGNKENoVVUT2.jpg',   type:'series' },
+  { id:'s6',  slug:'scrubs',                                   title:'Scrubs',                                  year:2026, genre:'Comedia',    imdb:'7.6', poster:'https://image.tmdb.org/t/p/w500/nNNM50G7p9C3n4vgidCiybsIdHA.jpg',   type:'series' },
+  { id:'s7',  slug:'el-caballero-de-los-siete-reinos',         title:'El caballero de los Siete Reinos',        year:2026, genre:'Fantasía',   imdb:'6.9', poster:'https://image.tmdb.org/t/p/w500/uB0v0sqbOGjj7MZZ9sb2vYnUVP3.jpg',   type:'series' },
+  { id:'s8',  slug:'the-pitt',                                 title:'The Pitt',                                year:2025, genre:'Drama',      imdb:'7.8', poster:'https://image.tmdb.org/t/p/w500/6fMGktEDXMZZPACJ5cWkVQ6TSte.jpg',   type:'series' },
+  { id:'s9',  slug:'bridgerton',                               title:'Bridgerton',                              year:2020, genre:'Romance',    imdb:'8.1', poster:'https://image.tmdb.org/t/p/w500/wR7f51NSYoIWJFnkdEG1pzIRI2Y.jpg',   type:'series' },
+  { id:'s10', slug:'los-dinosaurios',                          title:'Los dinosaurios',                         year:2026, genre:'Documental', imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/x37IK9WWhuzi7tgyMT4ff3kiT5X.jpg',   type:'series' },
+  { id:'s11', slug:'frieren-mas-alla-del-final-del-viaje',     title:'Frieren: Más allá del final del viaje',   year:2023, genre:'Animación',  imdb:'9.0', poster:'https://image.tmdb.org/t/p/w500/v7i3yNKxsDwB5IG9ElWgOGPieE8.jpg',   type:'series' },
+  { id:'s12', slug:'secuestro-aereo',                          title:'Secuestro aéreo',                         year:2023, genre:'Thriller',   imdb:'7.9', poster:'https://image.tmdb.org/t/p/w500/vAo3QL02oOI9Xz90FILQN5vxMsQ.jpg',   type:'series' },
+  { id:'s13', slug:'el-beso-de-la-sirena',                     title:'El beso de la sirena',                    year:2026, genre:'Romance',    imdb:'6.0', poster:'https://image.tmdb.org/t/p/w500/4C5iHtnndCvlbMvsKdRFtCDSE5L.jpg',   type:'series' },
+  { id:'s14', slug:'belleza-perfecta',                         title:'Belleza perfecta',                        year:2026, genre:'Sci-Fi',     imdb:'1.5', poster:'https://image.tmdb.org/t/p/w500/tZTG2PPAukzksPkiQV9c4suIQXk.jpg',   type:'series' },
+  { id:'s15', slug:'monarch-legado-de-monstruos',              title:'Monarch: legado de monstruos',            year:2023, genre:'Acción',     imdb:'7.9', poster:'https://image.tmdb.org/t/p/w500/8ZSrqUsa1JN9FkIQU8iTFOMw4D5.jpg',   type:'series' },
+  { id:'s16', slug:'furtivo',                                  title:'Furtivo',                                 year:2026, genre:'Thriller',   imdb:'8.5', poster:'https://image.tmdb.org/t/p/w500/9StRZHTEUnBCYcTtFFrzLaq0XaA.jpg',   type:'series' },
+  { id:'s17', slug:'doc-1',                                    title:'DOC',                                     year:2026, genre:'Drama',      imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/83aGkh2ERYWjY0zW5X1e4KABFIH.jpg',   type:'series' },
+  { id:'s18', slug:'the-boys',                                 title:'The Boys',                                year:2019, genre:'Acción',     imdb:'8.7', poster:'https://image.tmdb.org/t/p/w500/2BpXQQE5bj8moa6vDOyoxm9pMip.jpg',   type:'series' },
+  { id:'s19', slug:'star-trek-starfleet-academy',              title:'Star Trek: Starfleet Academy',            year:2026, genre:'Sci-Fi',     imdb:'7.0', poster:'https://image.tmdb.org/t/p/w500/yIooeJNzV0x8obp5oE1VqffMNqC.jpg',   type:'series' },
+  { id:'s20', slug:'one-piece',                                title:'One Piece',                               year:1999, genre:'Animación',  imdb:'8.7', poster:'https://image.tmdb.org/t/p/w500/6nyfkXDGngwY6PCW58n7CHQ2aMt.jpg',   type:'series' },
+  { id:'s21', slug:'paradise',                                 title:'Paradise',                                year:2025, genre:'Thriller',   imdb:'6.0', poster:'https://image.tmdb.org/t/p/w500/rkwqy7uE0ORdUxDFNeVq7vpJORN.jpg',   type:'series' },
+  { id:'s22', slug:'adolescencia',                             title:'Adolescencia',                            year:2026, genre:'Drama',      imdb:'9.0', poster:'https://image.tmdb.org/t/p/w500/2HX6zbr6O7Up8UXHxNq8fydUREh.jpg',   type:'series' },
+  { id:'s23', slug:'merlina',                                  title:'Merlina',                                 year:2022, genre:'Terror',     imdb:'8.2', poster:'https://image.tmdb.org/t/p/w500/a3WgEfqaXfLtHFcpEtGCmAeBaGb.jpg',   type:'series' },
+  { id:'s24', slug:'juego-de-tronos',                          title:'Juego de Tronos',                         year:2011, genre:'Fantasía',   imdb:'9.2', poster:'https://image.tmdb.org/t/p/w500/uo064OLS7OCsiNjbmwHFXaijFl4.jpg',   type:'series' },
+  { id:'s25', slug:'el-eternauta',                             title:'El Eternauta',                            year:2025, genre:'Sci-Fi',     imdb:'8.5', poster:'https://image.tmdb.org/t/p/w500/rpbwbKlRGS1utRyJE8bd2lxIdze.jpg',   type:'series' },
+  { id:'s26', slug:'the-walking-dead',                         title:'The Walking Dead',                        year:2010, genre:'Terror',     imdb:'8.2', poster:'https://image.tmdb.org/t/p/w500/qK6FZ2tTAMkIUbxeuRGPnxcbMh1.jpg',   type:'series' },
+  { id:'s27', slug:'dexter',                                   title:'Dexter',                                  year:2006, genre:'Thriller',   imdb:'8.6', poster:'https://image.tmdb.org/t/p/w500/wHfvEWFmOKdAA9T11VaFxW8DH9t.jpg',   type:'series' },
+  { id:'s28', slug:'gambito-de-dama',                          title:'Gambito de Dama',                         year:2020, genre:'Drama',      imdb:'8.6', poster:'https://image.tmdb.org/t/p/w500/sglJW2J8l9ke2iELql2BEepaA60.jpg',   type:'series' },
+  { id:'s29', slug:'lupin',                                    title:'Lupin',                                   year:2021, genre:'Thriller',   imdb:'7.5', poster:'https://image.tmdb.org/t/p/w500/nb6A41gKVXAxLFES034lHWnKveP.jpg',   type:'series' },
+  { id:'s30', slug:'baki-dou-el-samurai-invencible',           title:'Baki-Dou: El samurái invencible',         year:2026, genre:'Animación',  imdb:'0.0', poster:'https://image.tmdb.org/t/p/w500/qC4JawqYlUS9fwvAzGfY5lSz5uB.jpg',   type:'series' },
+  { id:'s31', slug:'cia',                                      title:'CIA',                                     year:2026, genre:'Thriller',   imdb:'9.5', poster:'https://image.tmdb.org/t/p/w500/8XbgWv137Umc8resTDeWh9ff7Y0.jpg',   type:'series' },
+];
 
-// SVG fallback inline — se muestra si el poster falla
+// ─── Géneros ─────────────────────────────────────────────────────────────────
+const MOVIE_GENRES  = ['Todos','Acción','Animación','Comedia','Documental','Drama','Musical','Romance','Sci-Fi','Terror'];
+const SERIES_GENRES = ['Todos','Acción','Animación','Comedia','Documental','Drama','Fantasía','Misterio','Romance','Sci-Fi','Terror','Thriller','Western'];
+
+const ITEMS_PER_PAGE = 24;
+
+// ─── Fallback poster ──────────────────────────────────────────────────────────
 const FALLBACK = (title: string) => {
-  const initials = title.replace(/[^a-zA-Z ]/g, '').split(' ').slice(0, 2).map(w => w[0] ?? '').join('').toUpperCase();
+  const initials = title.replace(/[^a-zA-Z ]/g,'').split(' ').slice(0,2).map(w => w[0] ?? '').join('').toUpperCase();
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">
-      <defs>
-        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0a0a18"/>
-          <stop offset="100%" stop-color="#0f1824"/>
-        </linearGradient>
-      </defs>
+      <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a0a18"/><stop offset="100%" stop-color="#0f1824"/>
+      </linearGradient></defs>
       <rect width="200" height="300" fill="url(#g)"/>
       <rect x="0" y="0" width="200" height="2" fill="#00c8ff" opacity="0.5"/>
-      <rect x="0" y="298" width="200" height="2" fill="#00c8ff" opacity="0.2"/>
       <text x="100" y="138" font-family="Arial" font-size="52" fill="#00c8ff" text-anchor="middle" opacity="0.18">🎬</text>
       <text x="100" y="185" font-family="Arial Black,Arial" font-size="38" fill="#00c8ff" text-anchor="middle" opacity="0.55" font-weight="bold">${initials}</text>
     </svg>`
@@ -251,442 +129,262 @@ const FALLBACK = (title: string) => {
 };
 
 // ─── MovieCard ────────────────────────────────────────────────────────────────
-function MovieCard({ movie, onClick }: { movie: PlutoMovie; onClick: () => void }) {
+function MovieCard({ item, onClick }: { item: PJMovie; onClick: () => void }) {
   const [errored, setErrored] = useState(false);
-
   return (
     <div className="mv-card" onClick={onClick}>
       <div className="mv-poster-wrap">
         <img
-          src={errored ? FALLBACK(movie.title) : movie.poster}
-          alt={movie.title}
+          src={errored ? FALLBACK(item.title) : item.poster}
+          alt={item.title}
           loading="lazy"
           decoding="async"
           crossOrigin="anonymous"
           onError={() => setErrored(true)}
         />
-        <div className="mv-poster-grad" />
-        <span className="mv-badge mv-badge-rating">{movie.rating}</span>
-        <span className="mv-badge mv-badge-year">{movie.year}</span>
+        <div className="mv-poster-grad"/>
+        <span className="mv-badge mv-badge-type">{item.type === 'movie' ? '🎬' : '📺'}</span>
+        <span className="mv-badge mv-badge-year">{item.year}</span>
         <div className="mv-play-wrap">
-          <div className="mv-play-btn"><Play size={20} color="#060608" fill="#060608" /></div>
+          <div className="mv-play-btn"><Play size={20} color="#060608" fill="#060608"/></div>
         </div>
       </div>
       <div className="mv-card-body">
-        <div className="mv-title">{movie.title}</div>
+        <div className="mv-title">{item.title}</div>
         <div className="mv-meta-row">
-          <Clock size={9} style={{flexShrink:0}}/>
-          <span>{movie.duration}</span>
-          {movie.imdb && (
-            <span className="mv-imdb"><Star size={9} fill="#f5c518" color="#f5c518"/>{movie.imdb}</span>
+          {item.imdb && parseFloat(item.imdb) > 0 && (
+            <span className="mv-imdb"><Star size={9} fill="#f5c518" color="#f5c518"/>{item.imdb}</span>
           )}
         </div>
-        <span className="mv-genre-pill">{movie.genre}</span>
+        <span className="mv-genre-pill">{item.genre}</span>
       </div>
     </div>
   );
 }
 
-// ─── MovieModal ───────────────────────────────────────────────────────────────
-function MovieModal({ movie, onClose }: { movie: PlutoMovie; onClose: () => void }) {
+// ─── EmbedModal — reproduce directamente en iframe ────────────────────────────
+function EmbedModal({ item, onClose }: { item: PJMovie; onClose: () => void }) {
   const [errored, setErrored] = useState(false);
-  const url = PLUTO_MOVIE(movie.slug);
+  const [fullscreen, setFullscreen] = useState(false);
+  const embedUrl = item.type === 'movie' ? PJ_MOVIE_URL(item.slug) : PJ_SERIES_URL(item.slug);
 
   return (
     <div className="mv-overlay" onClick={onClose}>
-      <div className="mv-modal" onClick={e => e.stopPropagation()}>
-        <button className="mv-modal-close" onClick={onClose}>✕</button>
+      <div
+        className={`mv-modal ${fullscreen ? 'mv-modal-full' : ''}`}
+        onClick={e => e.stopPropagation()}
+      >
+        <button className="mv-modal-close" onClick={onClose}><X size={14}/></button>
+        <button className="mv-modal-fs" onClick={() => setFullscreen(f => !f)} title="Pantalla completa">
+          <Maximize2 size={13}/>
+        </button>
 
-        {/* Hero */}
-        <div className="mv-modal-hero">
+        {/* Poster + título */}
+        <div className="mv-modal-header">
           <img
-            src={errored ? FALLBACK(movie.title) : movie.poster}
-            alt={movie.title}
+            src={errored ? FALLBACK(item.title) : item.poster}
+            alt={item.title}
+            className="mv-modal-thumb-sm"
             crossOrigin="anonymous"
             onError={() => setErrored(true)}
           />
-          <div className="mv-modal-hero-grad" />
-          <div className="mv-modal-hero-info">
-            <div className="mv-modal-thumb">
-              <img src={errored ? FALLBACK(movie.title) : movie.poster} alt={movie.title} crossOrigin="anonymous" />
-            </div>
-            <div>
-              <div className="mv-modal-title">{movie.title}</div>
-              <div className="mv-modal-meta">
-                <span className="mv-modal-rbadge">{movie.rating}</span>
-                <span className="mv-modal-txt">{movie.year}</span>
-                <span className="mv-modal-sep">·</span>
-                <span className="mv-modal-txt" style={{display:'flex',alignItems:'center',gap:3}}><Clock size={10}/>{movie.duration}</span>
-                {movie.imdb && <>
+          <div className="mv-modal-header-info">
+            <div className="mv-modal-title">{item.title}</div>
+            <div className="mv-modal-meta">
+              <span className="mv-modal-rbadge">{item.type === 'movie' ? 'Película' : 'Serie'}</span>
+              <span className="mv-modal-txt">{item.year}</span>
+              {item.imdb && parseFloat(item.imdb) > 0 && (
+                <>
                   <span className="mv-modal-sep">·</span>
-                  <span className="mv-modal-imdb"><Star size={10} fill="#f5c518" color="#f5c518"/>IMDb {movie.imdb}</span>
-                </>}
-              </div>
+                  <span className="mv-modal-imdb"><Star size={10} fill="#f5c518" color="#f5c518"/>IMDb {item.imdb}</span>
+                </>
+              )}
+              <span className="mv-modal-sep">·</span>
+              <span className="mv-modal-txt">{item.genre}</span>
             </div>
           </div>
         </div>
 
-        {/* Body */}
-        <div className="mv-modal-body">
-          <p className="mv-modal-desc">{movie.description}</p>
-          <div className="mv-modal-cta">
-            <a className="mv-cta-primary" href={url} target="_blank" rel="noopener noreferrer">
-              <Play size={15} fill="currentColor"/> Ver en Pluto TV
-            </a>
-            <a className="mv-cta-sec" href={url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={13}/> Nueva pestaña
-            </a>
-          </div>
+        {/* IFRAME embed */}
+        <div className="mv-iframe-wrap">
+          <iframe
+            src={embedUrl}
+            title={item.title}
+            allowFullScreen
+            allow="autoplay; fullscreen; encrypted-media"
+            className="mv-iframe"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        <div className="mv-modal-footer">
+          <span className="mv-footer-note">Contenido servido por pelisjuanita.com</span>
+          <a className="mv-cta-ext" href={embedUrl} target="_blank" rel="noopener noreferrer">
+            Abrir en nueva pestaña ↗
+          </a>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── MovieSection ─────────────────────────────────────────────────────────────
+// ─── MovieSection (componente principal) ─────────────────────────────────────
 export function MovieSection({ onBack }: { onBack: () => void }) {
+  const [tab,           setTab]           = useState<'movie' | 'series'>('movie');
   const [search,        setSearch]        = useState('');
   const [activeGenre,   setActiveGenre]   = useState('Todos');
   const [currentPage,   setCurrentPage]   = useState(1);
-  const [selectedMovie, setSelectedMovie] = useState<PlutoMovie | null>(null);
+  const [selected,      setSelected]      = useState<PJMovie | null>(null);
 
-  const filtered = useMemo(() => plutoMovies.filter(m => {
+  const catalog = tab === 'movie' ? pjMovies : pjSeries;
+  const genres  = tab === 'movie' ? MOVIE_GENRES : SERIES_GENRES;
+
+  const filtered = useMemo(() => catalog.filter(m => {
     const g = activeGenre === 'Todos' || m.genre === activeGenre;
-    const s = !search || m.title.toLowerCase().includes(search.toLowerCase()) || m.description.toLowerCase().includes(search.toLowerCase());
+    const s = !search || m.title.toLowerCase().includes(search.toLowerCase());
     return g && s;
-  }), [search, activeGenre]);
+  }), [catalog, search, activeGenre]);
 
-  const totalPages = Math.ceil(filtered.length / MOVIES_PER_PAGE);
-  const paginated  = filtered.slice((currentPage - 1) * MOVIES_PER_PAGE, currentPage * MOVIES_PER_PAGE);
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated  = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const go = (p: number) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const go = (p: number) => { setCurrentPage(p); window.scrollTo({ top:0, behavior:'smooth' }); };
+
+  const switchTab = (t: 'movie' | 'series') => {
+    setTab(t); setSearch(''); setActiveGenre('Todos'); setCurrentPage(1);
+  };
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Bebas+Neue&display=swap');
 
-        /* ── Root bg ── */
-        .mvs-root {
-          min-height: 100vh; background: #060608;
-          font-family: 'Rajdhani','Helvetica Neue',sans-serif; color: #e8f4ff; position: relative;
-        }
+        .mvs-root { min-height:100vh; background:#060608; font-family:'Rajdhani','Helvetica Neue',sans-serif; color:#e8f4ff; position:relative; }
         .mvs-root::before {
           content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-          background-image:
-            linear-gradient(rgba(0,200,255,0.025) 1px,transparent 1px),
-            linear-gradient(90deg,rgba(0,200,255,0.025) 1px,transparent 1px);
+          background-image: linear-gradient(rgba(0,200,255,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(0,200,255,0.025) 1px,transparent 1px);
           background-size:48px 48px;
           mask-image:radial-gradient(ellipse 100% 70% at 50% 0%,black 0%,transparent 80%);
           animation:mvs-pan 20s linear infinite;
         }
         @keyframes mvs-pan { 0%{background-position:0 0} 100%{background-position:48px 48px} }
 
-        /* ── Header ── */
-        .mvs-header {
-          background:linear-gradient(180deg,rgba(6,6,8,0.98) 0%,rgba(6,6,8,0.88) 100%);
-          backdrop-filter:blur(24px); border-bottom:1px solid rgba(0,200,255,0.1);
-          position:sticky; top:0; z-index:50;
-        }
-        .mvs-header::before {
-          content:''; position:absolute; top:0; left:0; right:0; height:1px;
-          background:linear-gradient(90deg,transparent,rgba(0,200,255,0.55) 30%,rgba(0,200,255,0.55) 70%,transparent);
-        }
-        .mvs-header-row {
-          max-width:1400px; margin:0 auto; padding:13px 24px;
-          display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-        }
+        /* Header */
+        .mvs-header { background:linear-gradient(180deg,rgba(6,6,8,0.98),rgba(6,6,8,0.88)); backdrop-filter:blur(24px); border-bottom:1px solid rgba(0,200,255,0.1); position:sticky; top:0; z-index:50; }
+        .mvs-header::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,200,255,0.55) 30%,rgba(0,200,255,0.55) 70%,transparent); }
+        .mvs-header-row { max-width:1400px; margin:0 auto; padding:13px 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 
-        /* back */
-        .mvs-back {
-          display:flex; align-items:center; gap:7px;
-          background:rgba(0,200,255,0.06); border:1px solid rgba(0,200,255,0.15); border-radius:7px;
-          color:#7aaaba; font-family:'Rajdhani',sans-serif; font-size:0.88rem; font-weight:600;
-          letter-spacing:0.05em; padding:8px 13px; cursor:pointer; flex-shrink:0; transition:all 0.2s;
-        }
+        .mvs-back { display:flex; align-items:center; gap:7px; background:rgba(0,200,255,0.06); border:1px solid rgba(0,200,255,0.15); border-radius:7px; color:#7aaaba; font-family:'Rajdhani',sans-serif; font-size:0.88rem; font-weight:600; letter-spacing:0.05em; padding:8px 13px; cursor:pointer; flex-shrink:0; transition:all 0.2s; }
         .mvs-back:hover { background:rgba(0,200,255,0.1); border-color:rgba(0,200,255,0.35); color:#00c8ff; }
 
-        /* brand */
         .mvs-brand { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-        .mvs-brand img {
-          width:30px; height:30px; border-radius:50%; object-fit:cover;
-          border:1px solid rgba(0,200,255,0.4); box-shadow:0 0 10px rgba(0,200,255,0.2);
-        }
-        .mvs-brand-name {
-          font-family:'Bebas Neue',cursive; font-size:1.5rem;
-          letter-spacing:0.12em; color:#e8f4ff; line-height:1;
-          text-shadow:0 0 20px rgba(0,200,255,0.35);
-        }
+        .mvs-brand img { width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,200,255,0.4); box-shadow:0 0 10px rgba(0,200,255,0.2); }
+        .mvs-brand-name { font-family:'Bebas Neue',cursive; font-size:1.5rem; letter-spacing:0.12em; color:#e8f4ff; line-height:1; text-shadow:0 0 20px rgba(0,200,255,0.35); }
         .mvs-brand-name .acc { color:#00c8ff; }
-
-        /* divider */
         .mvs-vdiv { width:1px; height:26px; background:rgba(0,200,255,0.12); flex-shrink:0; }
 
-        /* section title */
-        .mvs-sec-title { display:flex; align-items:center; gap:9px; flex-shrink:0; }
-        .mvs-film-icon {
-          width:30px; height:30px; border-radius:7px;
-          background:rgba(0,200,255,0.1); border:1px solid rgba(0,200,255,0.28);
-          display:flex; align-items:center; justify-content:center;
-        }
-        .mvs-sec-title-txt {
-          font-family:'Bebas Neue',cursive; font-size:1.4rem;
-          letter-spacing:0.1em; color:#e8f4ff; line-height:1;
-        }
-        .mvs-free-badge {
-          background:rgba(0,200,255,0.07); border:1px solid rgba(0,200,255,0.18);
-          color:rgba(0,200,255,0.65); font-size:0.6rem; font-weight:700;
-          letter-spacing:0.1em; padding:3px 8px; border-radius:3px;
-          text-transform:uppercase; font-family:'Rajdhani',sans-serif;
-        }
+        /* Tabs movie/series */
+        .mvs-tabs { display:flex; gap:6px; }
+        .mvs-tab { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:7px; border:1px solid rgba(0,200,255,0.1); background:rgba(0,200,255,0.02); color:#3a5a6a; font-family:'Rajdhani',sans-serif; font-size:0.82rem; font-weight:700; letter-spacing:0.06em; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
+        .mvs-tab:hover { border-color:rgba(0,200,255,0.28); color:#80c0d8; }
+        .mvs-tab.on { background:rgba(0,200,255,0.12); border-color:rgba(0,200,255,0.5); color:#00c8ff; box-shadow:0 0 12px rgba(0,200,255,0.1); }
 
-        /* search */
-        .mvs-search-wrap { position:relative; flex:1; max-width:380px; min-width:160px; }
+        /* Search */
+        .mvs-search-wrap { position:relative; flex:1; max-width:360px; min-width:140px; }
         .mvs-search-ico { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:rgba(0,200,255,0.28); pointer-events:none; }
-        .mvs-search {
-          width:100%; background:rgba(0,200,255,0.04); border:1px solid rgba(0,200,255,0.12);
-          border-radius:8px; color:#e8f4ff; font-family:'Rajdhani',sans-serif;
-          font-size:0.9rem; font-weight:500; padding:9px 36px 9px 36px; outline:none; transition:all 0.25s;
-        }
+        .mvs-search { width:100%; background:rgba(0,200,255,0.04); border:1px solid rgba(0,200,255,0.12); border-radius:8px; color:#e8f4ff; font-family:'Rajdhani',sans-serif; font-size:0.9rem; font-weight:500; padding:9px 36px 9px 36px; outline:none; transition:all 0.25s; }
         .mvs-search::placeholder { color:#2a3a4a; }
         .mvs-search:focus { border-color:rgba(0,200,255,0.4); background:rgba(0,200,255,0.06); box-shadow:0 0 0 3px rgba(0,200,255,0.07); }
-        .mvs-clear {
-          position:absolute; right:10px; top:50%; transform:translateY(-50%);
-          background:none; border:none; cursor:pointer; color:rgba(0,200,255,0.3);
-          display:flex; align-items:center; transition:color 0.2s;
-        }
+        .mvs-clear { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:rgba(0,200,255,0.3); display:flex; align-items:center; transition:color 0.2s; }
         .mvs-clear:hover { color:#00c8ff; }
 
-        /* genre pills row */
-        .mvs-pills-row {
-          max-width:1400px; margin:0 auto; padding:8px 24px 11px;
-          display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
-        }
+        /* Genre pills */
+        .mvs-pills-row { max-width:1400px; margin:0 auto; padding:8px 24px 11px; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
         .mvs-pills-row::-webkit-scrollbar { display:none; }
-        .mvs-pill {
-          flex-shrink:0; padding:5px 13px; border-radius:3px;
-          border:1px solid rgba(0,200,255,0.08); background:rgba(0,200,255,0.02);
-          color:#3a5a6a; font-size:0.73rem; font-weight:600;
-          font-family:'Rajdhani',sans-serif; letter-spacing:0.08em;
-          cursor:pointer; transition:all 0.18s; white-space:nowrap; text-transform:uppercase;
-        }
+        .mvs-pill { flex-shrink:0; padding:5px 13px; border-radius:3px; border:1px solid rgba(0,200,255,0.08); background:rgba(0,200,255,0.02); color:#3a5a6a; font-size:0.73rem; font-weight:600; font-family:'Rajdhani',sans-serif; letter-spacing:0.08em; cursor:pointer; transition:all 0.18s; white-space:nowrap; text-transform:uppercase; }
         .mvs-pill:hover { border-color:rgba(0,200,255,0.28); color:#80c0d8; background:rgba(0,200,255,0.04); }
         .mvs-pill.on { background:rgba(0,200,255,0.1); border-color:rgba(0,200,255,0.45); color:#00c8ff; font-weight:700; box-shadow:0 0 10px rgba(0,200,255,0.1); }
 
-        /* ── Main ── */
+        /* Main */
         .mvs-main { max-width:1400px; margin:0 auto; padding:22px 24px 64px; position:relative; z-index:1; }
-
-        /* info note */
-        .mvs-note {
-          background:rgba(0,200,255,0.025); border:1px solid rgba(0,200,255,0.08);
-          border-radius:8px; padding:10px 15px; margin-bottom:18px;
-          font-size:0.78rem; color:#4a6a7a; font-family:'Rajdhani',sans-serif; font-weight:500; line-height:1.55;
-        }
-        .mvs-note strong { color:rgba(0,200,255,0.6); font-weight:700; }
-
-        /* heading */
         .mvs-heading-row { display:flex; align-items:baseline; gap:10px; margin-bottom:18px; }
-        .mvs-heading {
-          font-family:'Bebas Neue',cursive; font-size:1.45rem;
-          letter-spacing:0.08em; color:#e8f4ff;
-        }
+        .mvs-heading { font-family:'Bebas Neue',cursive; font-size:1.45rem; letter-spacing:0.08em; color:#e8f4ff; }
         .mvs-count { font-size:0.7rem; color:rgba(0,200,255,0.4); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; font-family:'Rajdhani',sans-serif; }
 
-        /* grid — 6 cols en wide, se adapta */
-        .mvs-grid {
-          display:grid;
-          grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
-          gap:14px;
-        }
+        /* Grid */
+        .mvs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:14px; }
 
-        /* pagination */
+        /* Pagination */
         .mvs-pager { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:32px; }
-        .mvs-pager-btn {
-          min-width:34px; height:34px; display:flex; align-items:center; justify-content:center;
-          background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.1); border-radius:6px;
-          color:#3a5a6a; font-family:'Rajdhani',sans-serif; font-size:0.83rem; font-weight:600;
-          cursor:pointer; transition:all 0.18s; padding:0 5px;
-        }
+        .mvs-pager-btn { min-width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.1); border-radius:6px; color:#3a5a6a; font-family:'Rajdhani',sans-serif; font-size:0.83rem; font-weight:600; cursor:pointer; transition:all 0.18s; padding:0 5px; }
         .mvs-pager-btn:hover:not(:disabled) { border-color:rgba(0,200,255,0.35); color:#00c8ff; background:rgba(0,200,255,0.07); }
         .mvs-pager-btn.on { background:rgba(0,200,255,0.12); border-color:rgba(0,200,255,0.5); color:#00c8ff; font-weight:700; }
         .mvs-pager-btn:disabled { opacity:0.25; cursor:not-allowed; }
         .mvs-pager-info { text-align:center; margin-top:9px; font-size:0.68rem; color:rgba(0,200,255,0.28); letter-spacing:0.1em; text-transform:uppercase; font-family:'Rajdhani',sans-serif; }
 
-        /* empty */
+        /* Empty */
         .mvs-empty { text-align:center; padding:72px 20px; }
-        .mvs-empty-icon {
-          width:72px; height:72px; border-radius:50%; margin:0 auto 16px;
-          background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.08);
-          display:flex; align-items:center; justify-content:center;
-        }
+        .mvs-empty-icon { width:72px; height:72px; border-radius:50%; margin:0 auto 16px; background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.08); display:flex; align-items:center; justify-content:center; }
 
-        /* ── Card ── */
-        .mv-card {
-          cursor:pointer; background:#0b0b12; border:1px solid rgba(0,200,255,0.07);
-          border-radius:7px; overflow:hidden; position:relative;
-          transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s, box-shadow 0.25s;
-          font-family:'Rajdhani',sans-serif;
-        }
-        .mv-card:hover {
-          transform:translateY(-5px) scale(1.02);
-          border-color:rgba(0,200,255,0.35);
-          box-shadow:0 18px 45px rgba(0,0,0,0.8),0 0 22px rgba(0,200,255,0.06);
-        }
-        .mv-card::before {
-          content:''; position:absolute; top:0; left:0; right:0; height:1px;
-          background:linear-gradient(90deg,transparent,rgba(0,200,255,0.6),transparent);
-          opacity:0; z-index:5; transition:opacity 0.25s;
-        }
+        /* Card */
+        .mv-card { cursor:pointer; background:#0b0b12; border:1px solid rgba(0,200,255,0.07); border-radius:7px; overflow:hidden; position:relative; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),border-color 0.2s,box-shadow 0.25s; font-family:'Rajdhani',sans-serif; }
+        .mv-card:hover { transform:translateY(-5px) scale(1.02); border-color:rgba(0,200,255,0.35); box-shadow:0 18px 45px rgba(0,0,0,0.8),0 0 22px rgba(0,200,255,0.06); }
+        .mv-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,200,255,0.6),transparent); opacity:0; z-index:5; transition:opacity 0.25s; }
         .mv-card:hover::before { opacity:1; }
-
-        .mv-poster-wrap {
-          position:relative; aspect-ratio:2/3; overflow:hidden;
-          background:linear-gradient(135deg,#080810,#0f1824);
-        }
-        .mv-poster-wrap img {
-          width:100%; height:100%; object-fit:cover; display:block;
-          transition:transform 0.4s ease, filter 0.3s;
-          filter:brightness(0.93) saturate(0.9);
-        }
+        .mv-poster-wrap { position:relative; aspect-ratio:2/3; overflow:hidden; background:linear-gradient(135deg,#080810,#0f1824); }
+        .mv-poster-wrap img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s ease,filter 0.3s; filter:brightness(0.93) saturate(0.9); }
         .mv-card:hover .mv-poster-wrap img { transform:scale(1.06); filter:brightness(1) saturate(1.1); }
-
-        .mv-poster-grad {
-          position:absolute; inset:0;
-          background:linear-gradient(180deg,transparent 50%,rgba(6,6,10,0.97) 100%);
-          pointer-events:none;
-        }
-
-        .mv-badge {
-          position:absolute; font-size:0.57rem; font-weight:700;
-          padding:2px 6px; border-radius:3px; letter-spacing:0.07em;
-          font-family:'Rajdhani',sans-serif; backdrop-filter:blur(4px);
-        }
-        .mv-badge-rating {
-          top:8px; left:8px;
-          background:rgba(0,200,255,0.15); border:1px solid rgba(0,200,255,0.35); color:#00c8ff;
-        }
-        .mv-badge-year {
-          top:8px; right:8px;
-          background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
-        }
-
-        .mv-play-wrap {
-          position:absolute; inset:0;
-          display:flex; align-items:center; justify-content:center;
-          background:rgba(0,0,0,0); transition:background 0.25s;
-        }
+        .mv-poster-grad { position:absolute; inset:0; background:linear-gradient(180deg,transparent 50%,rgba(6,6,10,0.97) 100%); pointer-events:none; }
+        .mv-badge { position:absolute; font-size:0.57rem; font-weight:700; padding:2px 6px; border-radius:3px; letter-spacing:0.07em; font-family:'Rajdhani',sans-serif; backdrop-filter:blur(4px); }
+        .mv-badge-type { top:8px; left:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.8); font-size:0.75rem; }
+        .mv-badge-year { top:8px; right:8px; background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); }
+        .mv-play-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0); transition:background 0.25s; }
         .mv-card:hover .mv-play-wrap { background:rgba(0,8,18,0.5); }
-        .mv-play-btn {
-          width:52px; height:52px; border-radius:50%;
-          background:rgba(0,200,255,0.88);
-          display:flex; align-items:center; justify-content:center;
-          transform:scale(0); opacity:0;
-          transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
-          box-shadow:0 4px 24px rgba(0,200,255,0.5);
-        }
+        .mv-play-btn { width:52px; height:52px; border-radius:50%; background:rgba(0,200,255,0.88); display:flex; align-items:center; justify-content:center; transform:scale(0); opacity:0; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.2s; box-shadow:0 4px 24px rgba(0,200,255,0.5); }
         .mv-card:hover .mv-play-btn { transform:scale(1); opacity:1; }
-
         .mv-card-body { padding:8px 10px 11px; }
-        .mv-title {
-          font-weight:700; font-size:0.86rem; color:#e0eeff;
-          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-          margin-bottom:3px; font-family:'Rajdhani',sans-serif;
-        }
-        .mv-meta-row {
-          display:flex; align-items:center; gap:4px;
-          font-size:0.65rem; color:#4a6a7a; margin-bottom:5px;
-          font-family:'Rajdhani',sans-serif; font-weight:500;
-        }
-        .mv-imdb { display:flex; align-items:center; gap:2px; font-size:0.65rem; color:#f5c518; font-weight:700; margin-left:auto; }
-        .mv-genre-pill {
-          display:inline-block; background:rgba(0,200,255,0.06); color:rgba(0,200,255,0.75);
-          border:1px solid rgba(0,200,255,0.16); font-size:0.58rem; font-weight:700;
-          letter-spacing:0.06em; padding:2px 7px; border-radius:2px; text-transform:uppercase;
-          font-family:'Rajdhani',sans-serif;
-        }
+        .mv-title { font-weight:700; font-size:0.86rem; color:#e0eeff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:3px; font-family:'Rajdhani',sans-serif; }
+        .mv-meta-row { display:flex; align-items:center; gap:4px; font-size:0.65rem; color:#4a6a7a; margin-bottom:5px; font-family:'Rajdhani',sans-serif; font-weight:500; }
+        .mv-imdb { display:flex; align-items:center; gap:2px; font-size:0.65rem; color:#f5c518; font-weight:700; }
+        .mv-genre-pill { display:inline-block; background:rgba(0,200,255,0.06); color:rgba(0,200,255,0.75); border:1px solid rgba(0,200,255,0.16); font-size:0.58rem; font-weight:700; letter-spacing:0.06em; padding:2px 7px; border-radius:2px; text-transform:uppercase; font-family:'Rajdhani',sans-serif; }
 
-        /* ── Modal ── */
-        .mv-overlay {
-          position:fixed; inset:0; z-index:1000;
-          background:rgba(0,0,0,0.88); backdrop-filter:blur(10px);
-          display:flex; align-items:center; justify-content:center; padding:20px;
-          animation:mv-fi 0.18s ease;
-        }
+        /* Embed Modal */
+        .mv-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.92); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; padding:16px; animation:mv-fi 0.18s ease; }
         @keyframes mv-fi { from{opacity:0} to{opacity:1} }
-        .mv-modal {
-          background:#0c0c16; border:1px solid rgba(0,200,255,0.18);
-          border-radius:14px; width:100%; max-width:660px; max-height:90vh;
-          overflow-y:auto; display:flex; flex-direction:column; position:relative;
-          box-shadow:0 40px 100px rgba(0,0,0,0.9),0 0 50px rgba(0,200,255,0.05);
-          animation:mv-su 0.26s cubic-bezier(0.34,1.56,0.64,1);
-          scrollbar-width:thin; scrollbar-color:rgba(0,200,255,0.2) transparent;
-        }
-        .mv-modal::before {
-          content:''; position:absolute; top:0; left:0; right:0; height:1px; border-radius:14px 14px 0 0;
-          background:linear-gradient(90deg,transparent,rgba(0,200,255,0.5),transparent);
-        }
+        .mv-modal { background:#0c0c16; border:1px solid rgba(0,200,255,0.18); border-radius:12px; width:100%; max-width:900px; max-height:95vh; overflow-y:auto; display:flex; flex-direction:column; position:relative; box-shadow:0 40px 100px rgba(0,0,0,0.9),0 0 50px rgba(0,200,255,0.05); animation:mv-su 0.26s cubic-bezier(0.34,1.56,0.64,1); scrollbar-width:thin; scrollbar-color:rgba(0,200,255,0.2) transparent; }
+        .mv-modal-full { max-width:100%; max-height:100%; border-radius:0; }
+        .mv-modal::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; border-radius:12px 12px 0 0; background:linear-gradient(90deg,transparent,rgba(0,200,255,0.5),transparent); }
         @keyframes mv-su { from{opacity:0;transform:translateY(22px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
 
-        .mv-modal-close {
-          position:absolute; top:12px; right:12px; z-index:10;
-          width:28px; height:28px; border-radius:50%;
-          background:rgba(0,0,0,0.65); backdrop-filter:blur(6px);
-          border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
-          display:flex; align-items:center; justify-content:center;
-          cursor:pointer; font-size:0.9rem; font-weight:700; transition:all 0.2s;
-        }
+        .mv-modal-close { position:absolute; top:10px; right:10px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
         .mv-modal-close:hover { background:rgba(0,200,255,0.2); color:#00c8ff; }
+        .mv-modal-fs { position:absolute; top:10px; right:46px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
+        .mv-modal-fs:hover { border-color:rgba(0,200,255,0.3); color:#00c8ff; }
 
-        .mv-modal-hero { position:relative; height:220px; overflow:hidden; border-radius:14px 14px 0 0; }
-        .mv-modal-hero > img { width:100%; height:100%; object-fit:cover; filter:brightness(0.5) saturate(0.8); }
-        .mv-modal-hero-grad { position:absolute; inset:0; background:linear-gradient(180deg,transparent 25%,#0c0c16 100%); }
-        .mv-modal-hero-info {
-          position:absolute; bottom:0; left:0; right:0;
-          padding:16px 20px; display:flex; align-items:flex-end; gap:13px;
-        }
-        .mv-modal-thumb {
-          width:68px; height:102px; border-radius:5px; overflow:hidden; flex-shrink:0;
-          border:2px solid rgba(0,200,255,0.3); box-shadow:0 8px 22px rgba(0,0,0,0.6);
-        }
-        .mv-modal-thumb img { width:100%; height:100%; object-fit:cover; }
-        .mv-modal-title {
-          font-family:'Bebas Neue',cursive; font-size:1.75rem; letter-spacing:0.08em;
-          color:#fff; line-height:1; text-shadow:0 2px 10px rgba(0,0,0,0.8); margin-bottom:5px;
-        }
+        /* Modal header */
+        .mv-modal-header { display:flex; align-items:center; gap:12px; padding:16px 18px 12px; border-bottom:1px solid rgba(0,200,255,0.07); }
+        .mv-modal-thumb-sm { width:48px; height:72px; border-radius:5px; object-fit:cover; border:1px solid rgba(0,200,255,0.2); flex-shrink:0; }
+        .mv-modal-header-info { flex:1; min-width:0; }
+        .mv-modal-title { font-family:'Bebas Neue',cursive; font-size:1.5rem; letter-spacing:0.07em; color:#fff; line-height:1.1; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .mv-modal-meta { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
-        .mv-modal-rbadge {
-          background:rgba(0,200,255,0.15); border:1px solid rgba(0,200,255,0.35);
-          color:#00c8ff; font-size:0.6rem; font-weight:700;
-          padding:2px 7px; border-radius:3px; letter-spacing:0.08em; font-family:'Rajdhani',sans-serif;
-        }
-        .mv-modal-txt { font-size:0.7rem; color:rgba(255,255,255,0.6); font-family:'Rajdhani',sans-serif; font-weight:600; display:flex; align-items:center; gap:3px; }
-        .mv-modal-sep { font-size:0.7rem; color:rgba(255,255,255,0.28); font-family:'Rajdhani',sans-serif; }
+        .mv-modal-rbadge { background:rgba(0,200,255,0.15); border:1px solid rgba(0,200,255,0.35); color:#00c8ff; font-size:0.6rem; font-weight:700; padding:2px 7px; border-radius:3px; letter-spacing:0.08em; font-family:'Rajdhani',sans-serif; }
+        .mv-modal-txt { font-size:0.7rem; color:rgba(255,255,255,0.6); font-family:'Rajdhani',sans-serif; font-weight:600; }
+        .mv-modal-sep { font-size:0.7rem; color:rgba(255,255,255,0.28); }
         .mv-modal-imdb { font-size:0.7rem; color:#f5c518; font-weight:700; font-family:'Rajdhani',sans-serif; display:flex; align-items:center; gap:3px; }
 
-        .mv-modal-body { padding:16px 20px 22px; flex:1; }
-        .mv-modal-desc { font-family:'Rajdhani',sans-serif; font-size:0.9rem; color:#7aaaba; line-height:1.7; margin-bottom:18px; font-weight:500; }
-        .mv-modal-cta { display:flex; gap:9px; flex-wrap:wrap; }
-        .mv-cta-primary {
-          display:flex; align-items:center; gap:7px;
-          background:rgba(0,200,255,0.18); color:#00c8ff;
-          border:1px solid rgba(0,200,255,0.45); border-radius:8px; padding:10px 22px;
-          font-family:'Rajdhani',sans-serif; font-size:0.9rem; font-weight:700;
-          letter-spacing:0.05em; cursor:pointer; text-decoration:none; transition:all 0.2s;
-          box-shadow:0 0 22px rgba(0,200,255,0.1);
-        }
-        .mv-cta-primary:hover { background:rgba(0,200,255,0.28); box-shadow:0 0 32px rgba(0,200,255,0.2); }
-        .mv-cta-sec {
-          display:flex; align-items:center; gap:7px;
-          background:rgba(255,255,255,0.04); color:#6a8a9a;
-          border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:10px 16px;
-          font-family:'Rajdhani',sans-serif; font-size:0.86rem; font-weight:600;
-          cursor:pointer; transition:all 0.2s; text-decoration:none;
-        }
-        .mv-cta-sec:hover { border-color:rgba(0,200,255,0.2); color:#90b0c8; }
+        /* iFrame */
+        .mv-iframe-wrap { position:relative; width:100%; aspect-ratio:16/9; background:#000; }
+        .mv-iframe { width:100%; height:100%; border:none; display:block; }
+
+        /* Modal footer */
+        .mv-modal-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 18px; border-top:1px solid rgba(0,200,255,0.07); }
+        .mv-footer-note { font-size:0.68rem; color:rgba(0,200,255,0.3); font-family:'Rajdhani',sans-serif; letter-spacing:0.06em; }
+        .mv-cta-ext { font-size:0.75rem; color:rgba(0,200,255,0.6); font-family:'Rajdhani',sans-serif; font-weight:600; text-decoration:none; transition:color 0.2s; }
+        .mv-cta-ext:hover { color:#00c8ff; }
       `}</style>
 
       <div className="mvs-root">
-        {/* ── Header ── */}
+        {/* Header */}
         <header className="mvs-header">
           <div className="mvs-header-row">
             <button className="mvs-back" onClick={onBack}>
@@ -700,18 +398,23 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
 
             <div className="mvs-vdiv"/>
 
-            <div className="mvs-sec-title">
-              <div className="mvs-film-icon"><Film size={15} color="#00c8ff"/></div>
-              <span className="mvs-sec-title-txt">Películas</span>
-              <span className="mvs-free-badge">Pluto TV · Gratis</span>
+            {/* Tabs */}
+            <div className="mvs-tabs">
+              <button className={`mvs-tab ${tab === 'movie' ? 'on' : ''}`} onClick={() => switchTab('movie')}>
+                <Film size={13}/> Películas
+              </button>
+              <button className={`mvs-tab ${tab === 'series' ? 'on' : ''}`} onClick={() => switchTab('series')}>
+                <Tv size={13}/> Series
+              </button>
             </div>
 
+            {/* Search */}
             <div className="mvs-search-wrap">
               <Search size={13} className="mvs-search-ico"/>
               <input
                 className="mvs-search"
                 type="text"
-                placeholder="Buscar película…"
+                placeholder={tab === 'movie' ? 'Buscar película…' : 'Buscar serie…'}
                 value={search}
                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               />
@@ -721,7 +424,7 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
 
           {/* Genre pills */}
           <div className="mvs-pills-row">
-            {GENRES.map(g => (
+            {genres.map(g => (
               <button
                 key={g}
                 className={`mvs-pill ${activeGenre === g ? 'on' : ''}`}
@@ -731,18 +434,13 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
           </div>
         </header>
 
-        {/* ── Main ── */}
+        {/* Main */}
         <main className="mvs-main">
-          <div className="mvs-note">
-            🎬 Todas las películas son <strong>gratuitas y sin registro</strong> en Pluto TV.
-            Hacé clic en una tarjeta para ver detalles y abrirla directamente en Pluto TV.
-          </div>
-
           <div className="mvs-heading-row">
             <span className="mvs-heading">
-              {search ? `"${search}"` : activeGenre !== 'Todos' ? activeGenre : 'Catálogo Completo'}
+              {search ? `"${search}"` : activeGenre !== 'Todos' ? activeGenre : tab === 'movie' ? 'Películas' : 'Series'}
             </span>
-            <span className="mvs-count">{filtered.length} películas</span>
+            <span className="mvs-count">{filtered.length} títulos · pelisjuanita.com</span>
           </div>
 
           {filtered.length === 0 ? (
@@ -755,7 +453,7 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
             <>
               <div className="mvs-grid">
                 {paginated.map(m => (
-                  <MovieCard key={m.id} movie={m} onClick={() => setSelectedMovie(m)}/>
+                  <MovieCard key={m.id} item={m} onClick={() => setSelected(m)}/>
                 ))}
               </div>
 
@@ -772,7 +470,7 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
                       <ChevronRight size={14}/>
                     </button>
                   </div>
-                  <p className="mvs-pager-info">Página {currentPage} de {totalPages} — {MOVIES_PER_PAGE} por página</p>
+                  <p className="mvs-pager-info">Página {currentPage} de {totalPages} — {ITEMS_PER_PAGE} por página</p>
                 </>
               )}
             </>
@@ -780,9 +478,7 @@ export function MovieSection({ onBack }: { onBack: () => void }) {
         </main>
       </div>
 
-      {selectedMovie && (
-        <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)}/>
-      )}
+      {selected && <EmbedModal item={selected} onClose={() => setSelected(null)}/>}
     </>
   );
 }

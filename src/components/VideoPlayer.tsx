@@ -219,6 +219,15 @@ const PJ_STREAMS: Record<string, { label: string; url: string }[]> = {
     { label: 'Servidor 2', url: PJ_CVATT('Rm94U3BvcnRzM0hE') },
     { label: 'Servidor 3', url: PJ_EMBED('foxsports3.html') },
   ],
+  'espn-premium': [
+    { label: 'Servidor 1', url: PJ_CVATT('Rm94X1Nwb3J0c19QcmVtaXVuX0hE') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=ESPN_PREMIUM2` },
+    { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=espnpremium' },
+  ],
+  'directv-sports': [
+    { label: 'Servidor 1', url: PJ_CVATT('RGlyZWNUVl9TcG9ydHM=') },
+    { label: 'Servidor 2', url: PJ_EMBED('directvsports.html') },
+  ],
   'tyc-sports': [
     { label: 'Servidor 1', url: PJ_CVATT('VHlDU3BvcnQ') },
     { label: 'Servidor 2', url: 'https://la14hd.com/vivo/canales.php?stream=tycsports' },
@@ -228,13 +237,13 @@ const PJ_STREAMS: Record<string, { label: string; url: string }[]> = {
     { label: 'Servidor 1', url: PJ_CVATT('VHlDX0ludGVybmFjaW9uYWw=') },
   ],
   'tnt-sports': [
-    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
-    { label: 'Servidor 2', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 1', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
     { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=tntsports' },
   ],
   'tnt-sports-arg': [
-    { label: 'Servidor 1', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
-    { label: 'Servidor 2', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 1', url: PJ_CVATT('VE5UX1Nwb3J0c19IRA') },
+    { label: 'Servidor 2', url: `${PJ_BASE}trimi.html?id=TNT_SPORTS2` },
     { label: 'Servidor 3', url: 'https://la14hd.com/vivo/canal.php?stream=tntsports' },
   ],
   'nba-tv': [
@@ -547,17 +556,6 @@ function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
     if (opts && opts.length > 0) return opts;
     // fallback genérico si no hay entradas para el slug
     return [{ label: 'Servidor 1', url: `${PJ_BASE}cvatt.html?get=${slug}` }];
-  }
-
-  // ── latamvidz1 (deportes con pelota-libre) ────────────────────────────────
-  if (streamUrl.includes('latamvidz1.com/canal.php')) {
-    const match = streamUrl.match(/stream=([^&]+)/);
-    const stream = match ? match[1] : '';
-    return [
-      { label: 'Servidor 1', url: `https://latamvidz1.com/canal.php?stream=${stream}` },
-      { label: 'Servidor 2', url: `https://la14hd.com/vivo/canal.php?stream=${stream}` },
-      { label: 'Servidor 3', url: `https://streamtpcloud.com/global1.php?stream=${stream}` },
-    ];
   }
 
   // ── Pluto TV ──────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Channel } from '../types';
-import { ArrowLeft, Tv, Film, AlertCircle, MapPin, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Tv, Film, AlertCircle, MapPin, ChevronLeft, ChevronRight, ExternalLink, Star, Clock } from 'lucide-react';
 
 interface VideoPlayerProps {
   channel: Channel;
@@ -582,6 +582,35 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
   const [loading, setLoading] = useState(true);
   const [blocked, setBlocked] = useState(false);
 
+  // ── Favoritos ─────────────────────────────────────────────────────────────
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('tv_favorites') || '[]'); } catch { return []; }
+  });
+  const isFavorite = favorites.includes(channel.id);
+  const toggleFavorite = () => {
+    const next = isFavorite
+      ? favorites.filter(id => id !== channel.id)
+      : [...favorites, channel.id];
+    setFavorites(next);
+    localStorage.setItem('tv_favorites', JSON.stringify(next));
+  };
+
+  // ── Recientes ─────────────────────────────────────────────────────────────
+  const [recents, setRecents] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('tv_recents') || '[]'); } catch { return []; }
+  });
+  useEffect(() => {
+    const next = [channel.id, ...recents.filter(id => id !== channel.id)].slice(0, 8);
+    setRecents(next);
+    localStorage.setItem('tv_recents', JSON.stringify(next));
+    localStorage.setItem('tv_last_channel', channel.id);
+  }, [channel.id]);
+
+  const recentChannels = recents
+    .map(id => channels.find(c => c.id === id))
+    .filter(Boolean)
+    .filter(c => c!.id !== channel.id) as Channel[];
+
   const currentIndex = channels.findIndex(c => c.id === channel.id);
   const prevChannel = currentIndex > 0 ? channels[currentIndex - 1] : null;
   const nextChannel = currentIndex < channels.length - 1 ? channels[currentIndex + 1] : null;
@@ -864,6 +893,62 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         }
         .vp-tip-text { font-size: 0.82rem; color: #6a8a9a; line-height: 1.5; font-weight: 500; }
         .vp-tip-text strong { color: rgba(0,200,255,0.7); font-weight: 700; }
+
+        /* ── Favorito ── */
+        .vp-fav-btn {
+          display: flex; align-items: center; gap: 6px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 4px; color: #6a8a9a;
+          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 600;
+          letter-spacing: 0.05em; padding: 6px 14px;
+          cursor: pointer; transition: all 0.2s; white-space: nowrap; margin-left: auto;
+        }
+        .vp-fav-btn:hover {
+          background: rgba(255,200,0,0.06);
+          border-color: rgba(255,200,0,0.25);
+          color: #ffc800;
+        }
+        .vp-fav-btn.fav-active {
+          background: rgba(255,200,0,0.08);
+          border-color: rgba(255,200,0,0.35);
+          color: #ffc800;
+        }
+
+        /* ── Recientes ── */
+        .vp-recents {
+          margin-top: 20px;
+        }
+        .vp-recents-title {
+          font-size: 0.72rem; color: rgba(0,200,255,0.5); font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.12em;
+          font-family: 'Rajdhani', sans-serif;
+          display: flex; align-items: center; gap: 6px;
+          margin-bottom: 10px;
+        }
+        .vp-recents-list {
+          display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .vp-recent-btn {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 8px; padding: 7px 12px;
+          cursor: pointer; transition: all 0.2s;
+          font-family: 'Rajdhani', sans-serif;
+        }
+        .vp-recent-btn:hover {
+          background: rgba(0,200,255,0.07);
+          border-color: rgba(0,200,255,0.2);
+        }
+        .vp-recent-logo {
+          width: 24px; height: 24px; object-fit: contain;
+          border-radius: 3px; flex-shrink: 0;
+        }
+        .vp-recent-name {
+          font-size: 0.8rem; color: #8aaaba; font-weight: 600;
+          white-space: nowrap;
+        }
       `}</style>
 
       <div className="vp-root" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -921,20 +1006,32 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
             </div>
           </div>
 
-          {hasOptions && (
+          {(hasOptions || true) && (
             <div className="vp-servers">
-              <span className="vp-servers-label">Servidores:</span>
-              <div className="vp-server-btns">
-                {streamOptions.map((opt, i) => (
-                  <button
-                    key={i}
-                    className={`vp-server-btn ${activeStream === i ? 'active' : ''}`}
-                    onClick={() => setActiveStream(i)}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              {hasOptions && (
+                <>
+                  <span className="vp-servers-label">Servidores:</span>
+                  <div className="vp-server-btns">
+                    {streamOptions.map((opt, i) => (
+                      <button
+                        key={i}
+                        className={`vp-server-btn ${activeStream === i ? 'active' : ''}`}
+                        onClick={() => setActiveStream(i)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              <button
+                className={`vp-fav-btn ${isFavorite ? 'fav-active' : ''}`}
+                onClick={toggleFavorite}
+                title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                <Star size={13} fill={isFavorite ? 'currentColor' : 'none'} />
+                {isFavorite ? 'En favoritos' : 'Agregar a favoritos'}
+              </button>
             </div>
           )}
 
@@ -959,8 +1056,41 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
               Usá <strong>← →</strong> en PC · <strong>deslizá</strong> en tablet/móvil para cambiar de canal.
             </p>
           </div>
+
+          {recentChannels.length > 0 && (
+            <div className="vp-recents">
+              <div className="vp-recents-title">
+                <Clock size={12} />
+                Vistos recientemente
+              </div>
+              <div className="vp-recents-list">
+                {recentChannels.map(ch => (
+                  <button key={ch.id} className="vp-recent-btn" onClick={() => handleChannelChange(ch)}>
+                    <img className="vp-recent-logo" src={ch.logo} alt={ch.name} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <span className="vp-recent-name">{ch.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </>
   );
+}
+
+// ── Helpers exportables para el componente padre ──────────────────────────
+/** Devuelve el ID del último canal visto (para restaurar al abrir la app) */
+export function getLastChannelId(): string | null {
+  try { return localStorage.getItem('tv_last_channel'); } catch { return null; }
+}
+
+/** Devuelve los IDs marcados como favoritos */
+export function getFavoriteIds(): string[] {
+  try { return JSON.parse(localStorage.getItem('tv_favorites') || '[]'); } catch { return []; }
+}
+
+/** Devuelve los IDs de los canales vistos recientemente */
+export function getRecentIds(): string[] {
+  try { return JSON.parse(localStorage.getItem('tv_recents') || '[]'); } catch { return []; }
 }

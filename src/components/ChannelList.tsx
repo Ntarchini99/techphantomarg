@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Channel, FilterOptions } from '../types';
 import { ChannelCard } from './ChannelCard';
-import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, Film } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, Film, Star } from 'lucide-react';
 import { categories, countries } from '../data/channels';
 import { AppLayout } from './Livematches';
 import { Footer } from './Footer';
+import { getFavoriteIds } from './VideoPlayer';
 
 interface ChannelListProps {
   channels: Channel[];
@@ -33,9 +34,14 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
   });
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  // Se re-lee cada vez que se activa el filtro para capturar cambios recientes
+  const favoriteIds = useMemo(() => getFavoriteIds(), [showFavorites]);
 
   const filteredChannels = useMemo(() => {
     const filtered = channels.filter(channel => {
+      if (showFavorites) return favoriteIds.includes(channel.id);
       const matchesCategory = filters.category === 'Todas' || channel.category === filters.category;
       const matchesCountry  = filters.country === 'Todos'  || channel.country === filters.country;
       const matchesSearch   =
@@ -49,14 +55,20 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
       if (pa !== pb) return pa - pb;
       return a.name.localeCompare(b.name);
     });
-  }, [channels, filters]);
+  }, [channels, filters, showFavorites, favoriteIds]);
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
+    setShowFavorites(false); // salir de favoritos al aplicar otro filtro
   };
 
-  const totalPages      = Math.ceil(filteredChannels.length / CHANNELS_PER_PAGE);
+  const handleToggleFavorites = () => {
+    setShowFavorites(v => !v);
+    setCurrentPage(1);
+  };
+
+  const totalPages        = Math.ceil(filteredChannels.length / CHANNELS_PER_PAGE);
   const paginatedChannels = filteredChannels.slice(
     (currentPage - 1) * CHANNELS_PER_PAGE,
     currentPage * CHANNELS_PER_PAGE
@@ -130,7 +142,6 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         }
         .tp-logo-text .tp-accent { color: #00c8ff; }
 
-        /* Movies nav button */
         .tp-movies-btn {
           display: flex; align-items: center; gap: 7px;
           background: rgba(0,200,255,0.06);
@@ -181,6 +192,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
 
         .tp-pill-bar {
           display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding: 2px 0;
+          align-items: center;
         }
         .tp-pill-bar::-webkit-scrollbar { display: none; }
         .tp-pill {
@@ -194,6 +206,31 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         .tp-pill.active {
           background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.45); color: #00c8ff;
           font-weight: 700; box-shadow: 0 0 10px rgba(0,200,255,0.1), inset 0 0 6px rgba(0,200,255,0.04);
+        }
+
+        /* ── Pill Favoritos ── */
+        .tp-pill-fav {
+          flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+          padding: 5px 13px; border-radius: 3px;
+          border: 1px solid rgba(255,200,0,0.15); background: rgba(255,200,0,0.03);
+          color: #6a5a2a; font-size: 0.75rem; font-weight: 700;
+          font-family: 'Rajdhani', sans-serif; letter-spacing: 0.08em;
+          cursor: pointer; transition: all 0.18s; white-space: nowrap; text-transform: uppercase;
+        }
+        .tp-pill-fav:hover {
+          border-color: rgba(255,200,0,0.35); color: #ffc800;
+          background: rgba(255,200,0,0.06);
+        }
+        .tp-pill-fav.active {
+          background: rgba(255,200,0,0.1); border-color: rgba(255,200,0,0.5); color: #ffc800;
+          box-shadow: 0 0 10px rgba(255,200,0,0.08);
+        }
+        .tp-pill-fav-count {
+          background: rgba(255,200,0,0.18); border-radius: 2px;
+          padding: 0 5px; font-size: 0.68rem; line-height: 1.5;
+        }
+        .tp-pill-sep {
+          width: 1px; height: 16px; background: rgba(0,200,255,0.1); flex-shrink: 0;
         }
 
         .tp-filter-drawer { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s; }
@@ -216,6 +253,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           font-family: 'Bebas Neue', cursive; font-size: 1.6rem; letter-spacing: 0.08em;
           color: #e8f4ff; text-shadow: 0 0 16px rgba(0,200,255,0.15);
         }
+        .tp-section-heading.fav { color: #ffc800; text-shadow: 0 0 16px rgba(255,200,0,0.2); }
         .tp-section-count {
           font-size: 0.72rem; color: rgba(0,200,255,0.4); font-weight: 600;
           letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Rajdhani', sans-serif;
@@ -235,6 +273,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           width: 80px; height: 80px; background: rgba(0,200,255,0.03); border: 1px solid rgba(0,200,255,0.08);
           border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
         }
+        .tp-empty-icon.fav { background: rgba(255,200,0,0.03); border-color: rgba(255,200,0,0.12); }
 
         .tp-clear-btn {
           position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -309,12 +348,27 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
               </button>
             </div>
 
-            {/* Category pills */}
+            {/* Category pills + Favoritos */}
             <div className="tp-pill-bar" style={{ paddingBottom: 13 }}>
+
+              {/* ★ Favoritos — siempre primera */}
+              <button
+                className={`tp-pill-fav ${showFavorites ? 'active' : ''}`}
+                onClick={handleToggleFavorites}
+              >
+                <Star size={11} fill={showFavorites ? 'currentColor' : 'none'} />
+                Favoritos
+                {favoriteIds.length > 0 && (
+                  <span className="tp-pill-fav-count">{favoriteIds.length}</span>
+                )}
+              </button>
+
+              <div className="tp-pill-sep" />
+
               {categories.map(cat => (
                 <button
                   key={cat}
-                  className={`tp-pill ${filters.category === cat ? 'active' : ''}`}
+                  className={`tp-pill ${!showFavorites && filters.category === cat ? 'active' : ''}`}
                   onClick={() => handleFilterChange({ ...filters, category: cat })}
                 >
                   {cat}
@@ -350,23 +404,34 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '28px 24px 64px', position: 'relative', zIndex: 1 }}>
           <AppLayout onWatchChannel={handleWatchChannel}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 24 }}>
-              <h2 className="tp-section-heading">
-                {filters.search
-                  ? `Resultados para "${filters.search}"`
-                  : filters.category !== 'Todas'
-                    ? filters.category
-                    : 'En Emisión'}
+              <h2 className={`tp-section-heading ${showFavorites ? 'fav' : ''}`}>
+                {showFavorites
+                  ? '★ Mis Favoritos'
+                  : filters.search
+                    ? `Resultados para "${filters.search}"`
+                    : filters.category !== 'Todas'
+                      ? filters.category
+                      : 'En Emisión'}
               </h2>
               <span className="tp-section-count">{filteredChannels.length} canales</span>
             </div>
 
             {filteredChannels.length === 0 ? (
               <div className="tp-empty">
-                <div className="tp-empty-icon">
-                  <Search size={28} style={{ color: 'rgba(0,200,255,0.18)' }} />
+                <div className={`tp-empty-icon ${showFavorites ? 'fav' : ''}`}>
+                  {showFavorites
+                    ? <Star size={28} style={{ color: 'rgba(255,200,0,0.3)' }} />
+                    : <Search size={28} style={{ color: 'rgba(0,200,255,0.18)' }} />
+                  }
                 </div>
-                <p style={{ fontSize: '1rem', marginBottom: 6, color: '#3a5a6a', fontFamily: 'Rajdhani', fontWeight: 600 }}>Sin resultados</p>
-                <p style={{ fontSize: '0.85rem', color: '#2a3a4a', fontFamily: 'Rajdhani' }}>Intenta con otros términos o ajusta los filtros</p>
+                <p style={{ fontSize: '1rem', marginBottom: 6, color: '#3a5a6a', fontFamily: 'Rajdhani', fontWeight: 600 }}>
+                  {showFavorites ? 'Todavía no tenés favoritos' : 'Sin resultados'}
+                </p>
+                <p style={{ fontSize: '0.85rem', color: '#2a3a4a', fontFamily: 'Rajdhani' }}>
+                  {showFavorites
+                    ? 'Entrá a un canal y tocá ★ Agregar a favoritos para guardarlo acá'
+                    : 'Intenta con otros términos o ajusta los filtros'}
+                </p>
               </div>
             ) : (
               <>

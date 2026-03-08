@@ -4,27 +4,27 @@ import { Activity, Clock, ChevronRight, RefreshCw, Tv, Wifi, ChevronDown, Chevro
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
 
 const LEAGUES = [
-  { slug: 'arg.1',           name: 'Liga Profesional', flag: '🇦🇷', channel: 'ESPN Premium' },
-  { slug: 'arg.copa',        name: 'Copa Argentina',    flag: '🇦🇷', channel: 'ESPN Premium' },
-  { slug: 'uefa.champions',  name: 'Champions League',  flag: '🏆', channel: 'TNT Sports'   },
-  { slug: 'uefa.europa',     name: 'Europa League',     flag: '🇪🇺', channel: 'ESPN'         },
-  { slug: 'conmebol.libertadores', name: 'Libertadores', flag: '🌎', channel: 'ESPN'        },
-  { slug: 'eng.1',           name: 'Premier League',    flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', channel: 'ESPN'    },
-  { slug: 'esp.1',           name: 'La Liga',           flag: '🇪🇸', channel: 'ESPN 2'       },
-  { slug: 'ger.1',           name: 'Bundesliga',        flag: '🇩🇪', channel: 'ESPN 2'       },
-  { slug: 'ita.1',           name: 'Serie A',           flag: '🇮🇹', channel: 'ESPN 3'       },
-  { slug: 'fra.1',           name: 'Ligue 1',           flag: '🇫🇷', channel: 'ESPN 3'       },
+  { slug: 'arg.1', name: 'Liga Profesional', flag: '🇦🇷', channel: 'ESPN Premium' },
+  { slug: 'arg.copa', name: 'Copa Argentina', flag: '🇦🇷', channel: 'ESPN Premium' },
+  { slug: 'uefa.champions', name: 'Champions League', flag: '🏆', channel: 'TNT Sports' },
+  { slug: 'uefa.europa', name: 'Europa League', flag: '🇪🇺', channel: 'ESPN' },
+  { slug: 'conmebol.libertadores', name: 'Libertadores', flag: '🌎', channel: 'ESPN' },
+  { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', channel: 'ESPN' },
+  { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸', channel: 'ESPN 2' },
+  { slug: 'ger.1', name: 'Bundesliga', flag: '🇩🇪', channel: 'ESPN 2' },
+  { slug: 'ita.1', name: 'Serie A', flag: '🇮🇹', channel: 'ESPN 3' },
+  { slug: 'fra.1', name: 'Ligue 1', flag: '🇫🇷', channel: 'ESPN 3' },
 ];
 
 const INITIAL_VISIBLE = 2;
 
 const W = (file: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${file}`;
 const CHANNEL_LOGOS: Record<string, string> = {
-  'ESPN':         W('ESPN_wordmark.svg'),
-  'ESPN 2':       W('ESPN2_logo.svg'),
-  'ESPN 3':       W('ESPN3_logo.svg'),
+  'ESPN': W('ESPN_wordmark.svg'),
+  'ESPN 2': W('ESPN2_logo.svg'),
+  'ESPN 3': W('ESPN3_logo.svg'),
   'ESPN Premium': W('ESPN_Premium_logo.svg'),
-  'TNT Sports':   W('TNT_Sports_2020_logo.svg'),
+  'TNT Sports': W('TNT_Sports_2020_logo.svg'),
 };
 
 interface Match {
@@ -39,9 +39,9 @@ interface Match {
 
 function parseEvents(events: any[], league: typeof LEAGUES[0]): Match[] {
   return events.map((e: any) => {
-    const comp   = e.competitions?.[0];
-    const home   = comp?.competitors?.find((c: any) => c.homeAway === 'home');
-    const away   = comp?.competitors?.find((c: any) => c.homeAway === 'away');
+    const comp = e.competitions?.[0];
+    const home = comp?.competitors?.find((c: any) => c.homeAway === 'home');
+    const away = comp?.competitors?.find((c: any) => c.homeAway === 'away');
     const status = e.status?.type;
 
     let matchStatus: 'live' | 'upcoming' | 'finished' = 'upcoming';
@@ -52,20 +52,20 @@ function parseEvents(events: any[], league: typeof LEAGUES[0]): Match[] {
     try {
       const d = new Date(e.date);
       timeStr = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    } catch {}
+    } catch { }
 
     return {
       id: e.id,
-      homeTeam:  home?.team?.shortDisplayName ?? home?.team?.displayName ?? '?',
-      awayTeam:  away?.team?.shortDisplayName ?? away?.team?.displayName ?? '?',
-      homeLogo:  home?.team?.logo ?? '',
-      awayLogo:  away?.team?.logo ?? '',
+      homeTeam: home?.team?.shortDisplayName ?? home?.team?.displayName ?? '?',
+      awayTeam: away?.team?.shortDisplayName ?? away?.team?.displayName ?? '?',
+      homeLogo: home?.team?.logo ?? '',
+      awayLogo: away?.team?.logo ?? '',
       homeScore: home?.score ?? '',
       awayScore: away?.score ?? '',
-      status:    matchStatus,
-      clock:     status?.displayClock ?? '',
-      time:      timeStr,
-      league:    league.name, flag: league.flag, channel: league.channel,
+      status: matchStatus,
+      clock: status?.displayClock ?? '',
+      time: timeStr,
+      league: league.name, flag: league.flag, channel: league.channel,
     };
   });
 }
@@ -128,12 +128,12 @@ interface LiveMatchesProps {
 }
 
 export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
-  const [matches,   setMatches]   = useState<Match[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState(false);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
-  const [filter,    setFilter]    = useState<'live' | 'all'>('all');
-  const [expanded,  setExpanded]  = useState(false);
+  const [filter, setFilter] = useState<'live' | 'all'>('all');
+  const [expanded, setExpanded] = useState(false);
 
   const fetchMatches = useCallback(async () => {
     setLoading(true); setError(false);
@@ -145,7 +145,7 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
           if (!res.ok) return;
           const data = await res.json();
           if (data.events?.length) all.push(...parseEvents(data.events, league));
-        } catch {}
+        } catch { }
       }));
       all.sort((a, b) => {
         const order = { live: 0, upcoming: 1, finished: 2 };
@@ -167,10 +167,10 @@ export function LiveMatches({ onWatchChannel }: LiveMatchesProps) {
   useEffect(() => { setExpanded(false); }, [filter]);
 
   const liveMatches = matches.filter(m => m.status === 'live');
-  const displayed   = filter === 'live' ? liveMatches : matches;
+  const displayed = filter === 'live' ? liveMatches : matches;
   const visibleMatches = expanded ? displayed : displayed.slice(0, INITIAL_VISIBLE);
-  const hiddenCount    = displayed.length - INITIAL_VISIBLE;
-  const hasMore        = displayed.length > INITIAL_VISIBLE;
+  const hiddenCount = displayed.length - INITIAL_VISIBLE;
+  const hasMore = displayed.length > INITIAL_VISIBLE;
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Channel } from '../types';
 import { ArrowLeft, Tv, Film, AlertCircle, MapPin, ChevronLeft, ChevronRight, ExternalLink, Star, Clock } from 'lucide-react';
+import { Footer } from './Footer';
 
 interface VideoPlayerProps {
   channel: Channel;
@@ -11,7 +12,7 @@ interface VideoPlayerProps {
 
 const PJ_BASE = 'https://pelisjuanita.com/tv/';
 const PJ_CVATT = (get: string) => `${PJ_BASE}cvatt.html?get=${get}`;
-const PJ_EMBED  = (file: string) => `https://embed.saohgdasregions.fun/embed2/${file}`;
+const PJ_EMBED = (file: string) => `https://embed.saohgdasregions.fun/embed2/${file}`;
 const PJ_EMBED2 = (file: string) => `https://embed.sdfgnksbounce.com/embed2/${file}`;
 
 // Mapa slug → array de servidores (extraído directamente del HTML de pelisjuanita)
@@ -558,12 +559,10 @@ function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
     return [{ label: 'Servidor 1', url: `${PJ_BASE}cvatt.html?get=${slug}` }];
   }
 
-  // ── Pluto TV ──────────────────────────────────────────────────────────────
   if (streamUrl.includes('pluto.tv')) {
     return [{ label: 'Principal', url: streamUrl }];
   }
 
-  // ── Fallback genérico ─────────────────────────────────────────────────────
   return [{ label: 'Principal', url: streamUrl }];
 }
 
@@ -582,7 +581,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
   const [loading, setLoading] = useState(true);
   const [blocked, setBlocked] = useState(false);
 
-  // ── Favoritos ─────────────────────────────────────────────────────────────
   const [favorites, setFavorites] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('tv_favorites') || '[]'); } catch { return []; }
   });
@@ -595,7 +593,6 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
     localStorage.setItem('tv_favorites', JSON.stringify(next));
   };
 
-  // ── Recientes ─────────────────────────────────────────────────────────────
   const [recents, setRecents] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('tv_recents') || '[]'); } catch { return []; }
   });
@@ -620,7 +617,7 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' && nextChannel) handleChannelChange(nextChannel);
-      if (e.key === 'ArrowLeft'  && prevChannel) handleChannelChange(prevChannel);
+      if (e.key === 'ArrowLeft' && prevChannel) handleChannelChange(prevChannel);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -1074,23 +1071,20 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
             </div>
           )}
         </main>
+        <Footer />
       </div>
     </>
   );
 }
 
-// ── Helpers exportables para el componente padre ──────────────────────────
-/** Devuelve el ID del último canal visto (para restaurar al abrir la app) */
 export function getLastChannelId(): string | null {
   try { return localStorage.getItem('tv_last_channel'); } catch { return null; }
 }
 
-/** Devuelve los IDs marcados como favoritos */
 export function getFavoriteIds(): string[] {
   try { return JSON.parse(localStorage.getItem('tv_favorites') || '[]'); } catch { return []; }
 }
 
-/** Devuelve los IDs de los canales vistos recientemente */
 export function getRecentIds(): string[] {
   try { return JSON.parse(localStorage.getItem('tv_recents') || '[]'); } catch { return []; }
 }

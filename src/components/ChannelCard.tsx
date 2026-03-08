@@ -12,10 +12,10 @@ function makeInitialsAvatar(name: string): string {
   const initials = words.length >= 2
     ? (words[0][0] + words[1][0]).toUpperCase()
     : name.slice(0, 2).toUpperCase();
-  const hue    = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-  const bg     = `hsl(${hue},30%,8%)`;
+  const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+  const bg = `hsl(${hue},30%,8%)`;
   const accent = `hsl(${190},70%,55%)`;
-  const ring   = `hsl(${190},40%,16%)`;
+  const ring = `hsl(${190},40%,16%)`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
   <rect width="320" height="180" fill="${bg}"/>
   <rect x="0.5" y="0.5" width="319" height="179" fill="none" stroke="${ring}" stroke-width="1"/>
@@ -28,7 +28,7 @@ function makeInitialsAvatar(name: string): string {
 export function ChannelCard({ channel, onClick }: ChannelCardProps) {
   const [imgSrc, setImgSrc] = useState(channel.logo);
   const [loaded, setLoaded] = useState(false);
-  const isFallback           = imgSrc.startsWith('data:');
+  const isFallback = imgSrc.startsWith('data:');
 
   return (
     <>

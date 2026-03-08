@@ -7,13 +7,42 @@ import { MovieSection } from './components/MovieSection';
 
 type View = 'channels' | 'player' | 'movies';
 
+function saveSession(view: View, channelId?: string) {
+  try {
+    sessionStorage.setItem('tp_view', view);
+    if (channelId) sessionStorage.setItem('tp_channel', channelId);
+    else sessionStorage.removeItem('tp_channel');
+  } catch { }
+}
+
+function restoreSession(allChannels: Channel[]): { view: View; channel: Channel | null } {
+  try {
+    const view = (sessionStorage.getItem('tp_view') as View) || 'channels';
+    const channelId = sessionStorage.getItem('tp_channel');
+    const channel = channelId ? allChannels.find(c => c.id === channelId) ?? null : null;
+    // Si había un canal guardado pero no existe, volvemos a la lista
+    if (view === 'player' && !channel) return { view: 'channels', channel: null };
+    return { view, channel };
+  } catch {
+    return { view: 'channels', channel: null };
+  }
+}
+
+function pushHistory(view: View, channelId?: string) {
+  const state = { view, channelId };
+  const url = view === 'player' && channelId
+    ? `?canal=${channelId}`
+    : view === 'movies' ? '?seccion=peliculas' : '/';
+  window.history.pushState(state, '', url);
+}
+
 function App() {
-  const [channels, setChannels]               = useState<Channel[]>([]);
-  const [view, setView]                        = useState<View>('channels');
-  const [selectedChannel, setSelectedChannel]  = useState<Channel | null>(null);
-  const [loading, setLoading]                  = useState(true);
-  const [progress, setProgress]                = useState(0);
-  const [phase, setPhase]                      = useState<'logo' | 'loading'>('logo');
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [view, setView] = useState<View>('channels');
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<'logo' | 'loading'>('logo');
 
   useEffect(() => {
     const logoTimer = setTimeout(() => setPhase('loading'), 1800);
@@ -27,17 +56,72 @@ function App() {
 
     const load = async () => {
       await new Promise(resolve => setTimeout(resolve, 2800));
-      setChannels(channelsData);
+      const loaded = channelsData;
+      setChannels(loaded);
       setProgress(100);
       await new Promise(resolve => setTimeout(resolve, 350));
+
+      const { view: savedView, channel: savedChannel } = restoreSession(loaded);
+      setView(savedView);
+      setSelectedChannel(savedChannel);
+
+      // Estado inicial del historial
+      window.history.replaceState(
+        { view: savedView, channelId: savedChannel?.id },
+        '',
+        window.location.href
+      );
+
       setLoading(false);
     };
 
     load();
-    return () => { clearInterval(interval); clearTimeout(logoTimer); };
+
+    // ── Botón atrás/adelante del navegador ──
+    const handlePop = (e: PopStateEvent) => {
+      const state = e.state as { view?: View; channelId?: string } | null;
+      if (!state) { setView('channels'); setSelectedChannel(null); return; }
+      const targetView = state.view ?? 'channels';
+      setView(targetView);
+      if (targetView === 'player' && state.channelId) {
+        setSelectedChannel(prev =>
+          prev?.id === state.channelId
+            ? prev
+            : channelsData.find(c => c.id === state.channelId) ?? null
+        );
+      } else {
+        setSelectedChannel(null);
+      }
+      saveSession(targetView, state.channelId);
+    };
+    window.addEventListener('popstate', handlePop);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(logoTimer);
+      window.removeEventListener('popstate', handlePop);
+    };
   }, []);
 
-  // ── Splash screen ──────────────────────────────────────────────────────────
+  const goToPlayer = (ch: Channel) => {
+    setSelectedChannel(ch);
+    setView('player');
+    saveSession('player', ch.id);
+    pushHistory('player', ch.id);
+  };
+
+  const goToChannels = () => {
+    setView('channels');
+    saveSession('channels');
+    pushHistory('channels');
+  };
+
+  const goToMovies = () => {
+    setView('movies');
+    saveSession('movies');
+    pushHistory('movies');
+  };
+
   if (loading) {
     return (
       <>
@@ -301,29 +385,26 @@ function App() {
     );
   }
 
-  // ── Video player ────────────────────────────────────────────────────────────
   if (view === 'player' && selectedChannel) {
     return (
       <VideoPlayer
         channel={selectedChannel}
         channels={channels}
-        onBack={() => setView('channels')}
-        onChannelChange={(ch) => { setSelectedChannel(ch); setView('player'); }}
+        onBack={goToChannels}
+        onChannelChange={goToPlayer}
       />
     );
   }
 
-  // ── Películas ───────────────────────────────────────────────────────────────
   if (view === 'movies') {
-    return <MovieSection onBack={() => setView('channels')} />;
+    return <MovieSection onBack={goToChannels} />;
   }
 
-  // ── Channel list (default) ──────────────────────────────────────────────────
   return (
     <ChannelList
       channels={channels}
-      onChannelSelect={(ch) => { setSelectedChannel(ch); setView('player'); }}
-      onMoviesClick={() => setView('movies')}
+      onChannelSelect={goToPlayer}
+      onMoviesClick={goToMovies}
     />
   );
 }

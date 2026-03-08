@@ -17,7 +17,7 @@ const CHANNELS_PER_PAGE = 12;
 
 const PRIORITY_CHANNELS = [
   'espn premium', 'tnt sport', 'tyc sport', 'directv sport',
-  'a24', 'c5n', 'espn', 'fox sport', 'cnn', 'telefe', 'canal 13', 'america tv',
+  'fox sport', 'a24', 'c5n', 'espn', 'cnn', 'telefe', 'canal 13', 'america tv',
 ];
 
 function getPriorityScore(channelName: string): number {
@@ -36,15 +36,14 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
   const [currentPage, setCurrentPage] = useState(1);
   const [showFavorites, setShowFavorites] = useState(false);
 
-  // Se re-lee cada vez que se activa el filtro para capturar cambios recientes
   const favoriteIds = useMemo(() => getFavoriteIds(), [showFavorites]);
 
   const filteredChannels = useMemo(() => {
     const filtered = channels.filter(channel => {
       if (showFavorites) return favoriteIds.includes(channel.id);
       const matchesCategory = filters.category === 'Todas' || channel.category === filters.category;
-      const matchesCountry  = filters.country === 'Todos'  || channel.country === filters.country;
-      const matchesSearch   =
+      const matchesCountry = filters.country === 'Todos' || channel.country === filters.country;
+      const matchesSearch =
         channel.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         channel.description.toLowerCase().includes(filters.search.toLowerCase());
       return matchesCategory && matchesCountry && matchesSearch;
@@ -60,7 +59,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
-    setShowFavorites(false); // salir de favoritos al aplicar otro filtro
+    setShowFavorites(false);
   };
 
   const handleToggleFavorites = () => {
@@ -68,7 +67,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
     setCurrentPage(1);
   };
 
-  const totalPages        = Math.ceil(filteredChannels.length / CHANNELS_PER_PAGE);
+  const totalPages = Math.ceil(filteredChannels.length / CHANNELS_PER_PAGE);
   const paginatedChannels = filteredChannels.slice(
     (currentPage - 1) * CHANNELS_PER_PAGE,
     currentPage * CHANNELS_PER_PAGE
@@ -300,18 +299,15 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
       <div className="tp-root">
         <div className="tp-ambient" />
 
-        {/* ── Header ── */}
         <header className="tp-header">
           <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0 12px', flexWrap: 'wrap' }}>
 
-              {/* Logo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 4 }}>
                 <img className="tp-logo-img" src="https://i.postimg.cc/j2WvZw96/Whats-App-Image-2026-03-02-at-11-44-07.jpg" alt="TechPhantom" />
                 <span className="tp-logo-text"><span className="tp-accent">Tech</span>Phantom</span>
               </div>
 
-              {/* Search */}
               <div className="tp-search-wrap" style={{ flex: 1, maxWidth: 440, minWidth: 180 }}>
                 <Search size={16} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'rgba(0,200,255,0.28)', zIndex: 1 }} />
                 <input
@@ -328,14 +324,12 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
                 )}
               </div>
 
-              {/* Movies button */}
               <button className="tp-movies-btn" onClick={onMoviesClick}>
                 <Film size={14} />
                 Películas
                 <span className="tp-movies-dot" />
               </button>
 
-              {/* Filter toggle */}
               <button
                 className={`tp-filter-btn ${showFilters ? 'active' : ''}`}
                 onClick={() => setShowFilters(v => !v)}
@@ -348,10 +342,8 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
               </button>
             </div>
 
-            {/* Category pills + Favoritos */}
             <div className="tp-pill-bar" style={{ paddingBottom: 13 }}>
 
-              {/* ★ Favoritos — siempre primera */}
               <button
                 className={`tp-pill-fav ${showFavorites ? 'active' : ''}`}
                 onClick={handleToggleFavorites}

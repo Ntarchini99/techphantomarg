@@ -368,7 +368,7 @@ function App() {
             </div>
             <div>
               <div className="brand-name"><span className="accent">Tech</span>Phantom</div>
-              <div className="brand-tagline">Streaming · HD · Live · Películas · Series · Streams</div>
+              <div className="brand-tagline">Streaming · HD · Live · Películas · Series</div>
             </div>
             <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>
               <div className="progress-header">

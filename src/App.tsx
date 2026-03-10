@@ -1,25 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Channel } from './types';
 import { channels as channelsData } from './data/channels';
-import { ChannelList } from './components/ChannelList';
+import { ChannelList, sortChannels } from './components/ChannelList';
 import { VideoPlayer } from './components/VideoPlayer';
 import { MovieSection } from './components/MovieSection';
 
 type View = 'channels' | 'player' | 'movies';
 
+// ── Persistencia de sesión ─────────────────────────────────────────────────
 function saveSession(view: View, channelId?: string) {
   try {
     sessionStorage.setItem('tp_view', view);
     if (channelId) sessionStorage.setItem('tp_channel', channelId);
     else sessionStorage.removeItem('tp_channel');
-  } catch { }
+  } catch {}
 }
 
 function restoreSession(allChannels: Channel[]): { view: View; channel: Channel | null } {
   try {
-    const view = (sessionStorage.getItem('tp_view') as View) || 'channels';
+    const view      = (sessionStorage.getItem('tp_view') as View) || 'channels';
     const channelId = sessionStorage.getItem('tp_channel');
-    const channel = channelId ? allChannels.find(c => c.id === channelId) ?? null : null;
+    const channel   = channelId ? allChannels.find(c => c.id === channelId) ?? null : null;
     // Si había un canal guardado pero no existe, volvemos a la lista
     if (view === 'player' && !channel) return { view: 'channels', channel: null };
     return { view, channel };
@@ -28,21 +29,23 @@ function restoreSession(allChannels: Channel[]): { view: View; channel: Channel 
   }
 }
 
+// Pushea un estado al historial del navegador
 function pushHistory(view: View, channelId?: string) {
   const state = { view, channelId };
-  const url = view === 'player' && channelId
+  const url   = view === 'player' && channelId
     ? `?canal=${channelId}`
     : view === 'movies' ? '?seccion=peliculas' : '/';
   window.history.pushState(state, '', url);
 }
+// ──────────────────────────────────────────────────────────────────────────
 
 function App() {
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [view, setView] = useState<View>('channels');
+  const [channels, setChannels]              = useState<Channel[]>([]);
+  const [view, setView]                      = useState<View>('channels');
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<'logo' | 'loading'>('logo');
+  const [loading, setLoading]                = useState(true);
+  const [progress, setProgress]              = useState(0);
+  const [phase, setPhase]                    = useState<'logo' | 'loading'>('logo');
 
   useEffect(() => {
     const logoTimer = setTimeout(() => setPhase('loading'), 1800);
@@ -57,10 +60,11 @@ function App() {
     const load = async () => {
       await new Promise(resolve => setTimeout(resolve, 2800));
       const loaded = channelsData;
-      setChannels(loaded);
+      setChannels(sortChannels(loaded));
       setProgress(100);
       await new Promise(resolve => setTimeout(resolve, 350));
 
+      // Restaurar sesión previa al terminar de cargar
       const { view: savedView, channel: savedChannel } = restoreSession(loaded);
       setView(savedView);
       setSelectedChannel(savedChannel);
@@ -122,6 +126,7 @@ function App() {
     pushHistory('movies');
   };
 
+  // ── Splash screen ──────────────────────────────────────────────────────────
   if (loading) {
     return (
       <>
@@ -368,7 +373,7 @@ function App() {
             </div>
             <div>
               <div className="brand-name"><span className="accent">Tech</span>Phantom</div>
-              <div className="brand-tagline">Streaming · HD · Live · Películas · Series</div>
+              <div className="brand-tagline">Streaming · HD · Live · Películas · Series · Streams</div>
             </div>
             <div className={`loading-section ${phase === 'logo' ? 'hidden' : ''}`}>
               <div className="progress-header">
@@ -385,6 +390,7 @@ function App() {
     );
   }
 
+  // ── Video player ────────────────────────────────────────────────────────────
   if (view === 'player' && selectedChannel) {
     return (
       <VideoPlayer
@@ -396,10 +402,12 @@ function App() {
     );
   }
 
+  // ── Películas ───────────────────────────────────────────────────────────────
   if (view === 'movies') {
     return <MovieSection onBack={goToChannels} />;
   }
 
+  // ── Channel list (default) ──────────────────────────────────────────────────
   return (
     <ChannelList
       channels={channels}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Channel, FilterOptions } from '../types';
 import { ChannelCard } from './ChannelCard';
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronLeft, ChevronRight, Film, Star } from 'lucide-react';
@@ -45,7 +45,6 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
   const [currentPage, setCurrentPage] = useState(1);
   const [showFavorites, setShowFavorites] = useState(false);
 
-  // Se re-lee cada vez que se activa el filtro para capturar cambios recientes
   const favoriteIds = useMemo(() => getFavoriteIds(), [showFavorites]);
 
   const filteredChannels = useMemo(() => {
@@ -69,7 +68,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
-    setShowFavorites(false); // salir de favoritos al aplicar otro filtro
+    setShowFavorites(false);
   };
 
   const handleToggleFavorites = () => {
@@ -171,6 +170,126 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         }
         @keyframes tp-mdot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+        /* ── QR button en header ── */
+        .tp-qr-btn {
+          display: flex; align-items: center; gap: 7px;
+          background: rgba(0,200,255,0.04);
+          border: 1px solid rgba(0,200,255,0.14);
+          border-radius: 7px; color: rgba(0,200,255,0.6);
+          font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 700;
+          letter-spacing: 0.06em; padding: 8px 13px; cursor: pointer; flex-shrink: 0;
+          transition: all 0.2s; white-space: nowrap;
+        }
+        .tp-qr-btn:hover {
+          background: rgba(0,200,255,0.1);
+          border-color: rgba(0,200,255,0.4);
+          color: #00c8ff;
+          box-shadow: 0 0 14px rgba(0,200,255,0.1);
+        }
+        .tp-qr-icon { font-size: 0.95rem; line-height: 1; }
+
+        /* ── QR modal overlay ── */
+        .tp-qr-overlay {
+          position: fixed; inset: 0; z-index: 200;
+          background: rgba(0,0,0,0.88);
+          backdrop-filter: blur(12px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          animation: tp-qr-fi 0.18s ease;
+        }
+        @keyframes tp-qr-fi { from{opacity:0} to{opacity:1} }
+
+        /* ── QR card ── */
+        .tp-qr-card {
+          background: #0b0b14;
+          border: 1px solid rgba(0,200,255,0.22);
+          border-radius: 16px;
+          padding: 24px 22px 20px;
+          display: flex; flex-direction: column;
+          align-items: center; gap: 14px;
+          position: relative;
+          width: 280px;
+          font-family: 'Rajdhani', sans-serif;
+          box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(0,200,255,0.07);
+          animation: tp-qr-su 0.26s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes tp-qr-su { from{opacity:0;transform:scale(0.9) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .tp-qr-card::before {
+          content: '';
+          position: absolute; top: 0; left: 0; right: 0; height: 1px;
+          border-radius: 16px 16px 0 0;
+          background: linear-gradient(90deg, transparent, rgba(0,200,255,0.65), transparent);
+        }
+        .tp-qr-close {
+          position: absolute; top: 10px; right: 10px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 50%; width: 28px; height: 28px;
+          display: flex; align-items: center; justify-content: center;
+          color: #4a6a7a; cursor: pointer; font-size: 0.8rem;
+          transition: all 0.2s; line-height: 1;
+        }
+        .tp-qr-close:hover { background: rgba(0,200,255,0.1); color: #00c8ff; border-color: rgba(0,200,255,0.3); }
+
+        .tp-qr-title {
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.1rem; letter-spacing: 0.13em;
+          color: #e8f4ff; text-align: center;
+        }
+        .tp-qr-title span { color: #00c8ff; }
+        .tp-qr-sub {
+          font-size: 0.68rem; color: #3a5a6a;
+          letter-spacing: 0.08em; text-transform: uppercase;
+          font-weight: 600; margin-top: -10px;
+        }
+
+        .tp-qr-frame {
+          position: relative; padding: 10px;
+          background: #060608;
+          border: 1px solid rgba(0,200,255,0.14);
+          border-radius: 10px;
+          box-shadow: 0 0 22px rgba(0,200,255,0.07), inset 0 0 18px rgba(0,0,0,0.5);
+        }
+        .tp-qr-corner { position: absolute; width: 14px; height: 14px; }
+        .tp-qr-c-tl { top: 5px; left: 5px; border-top: 2px solid #00c8ff; border-left: 2px solid #00c8ff; border-radius: 2px 0 0 0; }
+        .tp-qr-c-tr { top: 5px; right: 5px; border-top: 2px solid #00c8ff; border-right: 2px solid #00c8ff; border-radius: 0 2px 0 0; }
+        .tp-qr-c-bl { bottom: 5px; left: 5px; border-bottom: 2px solid #00c8ff; border-left: 2px solid #00c8ff; border-radius: 0 0 0 2px; }
+        .tp-qr-c-br { bottom: 5px; right: 5px; border-bottom: 2px solid #00c8ff; border-right: 2px solid #00c8ff; border-radius: 0 0 2px 0; }
+
+        .tp-qr-img { display: block; width: 160px; height: 160px; border-radius: 4px; opacity:0; transition: opacity 0.4s; }
+        .tp-qr-img.rdy { opacity: 1; }
+        .tp-qr-shimmer { position: absolute; inset: 10px; background: linear-gradient(90deg,#0b0b14 25%,#131320 50%,#0b0b14 75%); background-size: 200% 100%; animation: tp-qrsh 1.4s infinite; border-radius: 4px; }
+        .tp-qr-shimmer.done { display: none; }
+        @keyframes tp-qrsh { to { background-position: -200% 0; } }
+
+        .tp-qr-hint {
+          display: flex; align-items: center; gap: 7px;
+          font-size: 0.74rem; color: #4a6a7a; font-weight: 600;
+        }
+        .tp-qr-hint-emoji { animation: tp-bounce 2s ease-in-out infinite; display: inline-block; }
+        @keyframes tp-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+        .tp-qr-divider { width: 100%; height: 1px; background: rgba(0,200,255,0.07); }
+
+        .tp-qr-stats { display: flex; gap: 12px; align-items: center; }
+        .tp-qr-stat { text-align: center; }
+        .tp-qr-stat-n { font-family: 'Bebas Neue', cursive; font-size: 1.3rem; letter-spacing: 0.06em; color: #00c8ff; line-height:1; text-shadow: 0 0 10px rgba(0,200,255,0.35); }
+        .tp-qr-stat-l { font-size: 0.57rem; color: #2a3a4a; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .tp-qr-stat-sep { width: 1px; height: 28px; background: rgba(0,200,255,0.08); }
+
+        .tp-qr-url-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+        .tp-qr-url { flex: 1; font-size: 0.62rem; color: rgba(0,200,255,0.4); font-weight: 600; letter-spacing: 0.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tp-qr-copy {
+          flex-shrink: 0;
+          background: rgba(0,200,255,0.06); border: 1px solid rgba(0,200,255,0.18);
+          border-radius: 5px; color: rgba(0,200,255,0.6);
+          font-family: 'Rajdhani', sans-serif; font-size: 0.68rem; font-weight: 700;
+          letter-spacing: 0.07em; text-transform: uppercase;
+          padding: 5px 10px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .tp-qr-copy:hover { background: rgba(0,200,255,0.12); border-color: rgba(0,200,255,0.4); color: #00c8ff; }
+        .tp-qr-copy.ok { background: rgba(0,200,100,0.1); border-color: rgba(0,200,100,0.4); color: #00e87a; }
+
         .tp-search-wrap { position: relative; }
         .tp-search-input {
           width: 100%;
@@ -184,7 +303,6 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           border-color: rgba(0,200,255,0.4); background: rgba(0,200,255,0.06);
           box-shadow: 0 0 0 3px rgba(0,200,255,0.07), 0 0 20px rgba(0,200,255,0.06);
         }
-
         .tp-filter-btn {
           display: flex; align-items: center; gap: 6px;
           background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.12);
@@ -198,11 +316,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           background: rgba(0,200,255,0.08); box-shadow: 0 0 12px rgba(0,200,255,0.08);
         }
         .tp-filter-dot { width: 6px; height: 6px; border-radius: 50%; background: #00c8ff; box-shadow: 0 0 6px #00c8ff; }
-
-        .tp-pill-bar {
-          display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding: 2px 0;
-          align-items: center;
-        }
+        .tp-pill-bar { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; align-items: center; }
         .tp-pill-bar::-webkit-scrollbar { display: none; }
         .tp-pill {
           flex-shrink: 0; padding: 5px 13px; border-radius: 3px;
@@ -212,12 +326,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           cursor: pointer; transition: all 0.18s; white-space: nowrap; text-transform: uppercase;
         }
         .tp-pill:hover { border-color: rgba(0,200,255,0.28); color: #80c0d8; background: rgba(0,200,255,0.05); }
-        .tp-pill.active {
-          background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.45); color: #00c8ff;
-          font-weight: 700; box-shadow: 0 0 10px rgba(0,200,255,0.1), inset 0 0 6px rgba(0,200,255,0.04);
-        }
-
-        /* ── Pill Favoritos ── */
+        .tp-pill.active { background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.45); color: #00c8ff; font-weight: 700; box-shadow: 0 0 10px rgba(0,200,255,0.1), inset 0 0 6px rgba(0,200,255,0.04); }
         .tp-pill-fav {
           flex-shrink: 0; display: flex; align-items: center; gap: 5px;
           padding: 5px 13px; border-radius: 3px;
@@ -226,79 +335,31 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
           font-family: 'Rajdhani', sans-serif; letter-spacing: 0.08em;
           cursor: pointer; transition: all 0.18s; white-space: nowrap; text-transform: uppercase;
         }
-        .tp-pill-fav:hover {
-          border-color: rgba(255,200,0,0.35); color: #ffc800;
-          background: rgba(255,200,0,0.06);
-        }
-        .tp-pill-fav.active {
-          background: rgba(255,200,0,0.1); border-color: rgba(255,200,0,0.5); color: #ffc800;
-          box-shadow: 0 0 10px rgba(255,200,0,0.08);
-        }
-        .tp-pill-fav-count {
-          background: rgba(255,200,0,0.18); border-radius: 2px;
-          padding: 0 5px; font-size: 0.68rem; line-height: 1.5;
-        }
-        .tp-pill-sep {
-          width: 1px; height: 16px; background: rgba(0,200,255,0.1); flex-shrink: 0;
-        }
-
+        .tp-pill-fav:hover { border-color: rgba(255,200,0,0.35); color: #ffc800; background: rgba(255,200,0,0.06); }
+        .tp-pill-fav.active { background: rgba(255,200,0,0.1); border-color: rgba(255,200,0,0.5); color: #ffc800; box-shadow: 0 0 10px rgba(255,200,0,0.08); }
+        .tp-pill-fav-count { background: rgba(255,200,0,0.18); border-radius: 2px; padding: 0 5px; font-size: 0.68rem; line-height: 1.5; }
+        .tp-pill-sep { width: 1px; height: 16px; background: rgba(0,200,255,0.1); flex-shrink: 0; }
         .tp-filter-drawer { overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s; }
         .tp-filter-drawer.open  { max-height: 200px; opacity: 1; }
         .tp-filter-drawer.closed{ max-height: 0;     opacity: 0; }
-
-        .tp-styled-select {
-          appearance: none; background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.12);
-          border-radius: 8px; color: #e8f4ff;
-          font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 500;
-          padding: 10px 36px 10px 14px; cursor: pointer; outline: none; width: 100%;
-          transition: border-color 0.2s, background 0.2s;
-        }
+        .tp-styled-select { appearance: none; background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.12); border-radius: 8px; color: #e8f4ff; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 500; padding: 10px 36px 10px 14px; cursor: pointer; outline: none; width: 100%; transition: border-color 0.2s, background 0.2s; }
         .tp-styled-select:hover, .tp-styled-select:focus { border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.07); }
         .tp-styled-select option { background: #0d0d14; color: #e8f4ff; }
         .tp-select-wrap { position: relative; }
         .tp-select-wrap svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: rgba(0,200,255,0.35); }
-
-        .tp-section-heading {
-          font-family: 'Bebas Neue', cursive; font-size: 1.6rem; letter-spacing: 0.08em;
-          color: #e8f4ff; text-shadow: 0 0 16px rgba(0,200,255,0.15);
-        }
+        .tp-section-heading { font-family: 'Bebas Neue', cursive; font-size: 1.6rem; letter-spacing: 0.08em; color: #e8f4ff; text-shadow: 0 0 16px rgba(0,200,255,0.15); }
         .tp-section-heading.fav { color: #ffc800; text-shadow: 0 0 16px rgba(255,200,0,0.2); }
-        .tp-section-count {
-          font-size: 0.72rem; color: rgba(0,200,255,0.4); font-weight: 600;
-          letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Rajdhani', sans-serif;
-        }
-
+        .tp-section-count { font-size: 0.72rem; color: rgba(0,200,255,0.4); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Rajdhani', sans-serif; }
         .tp-channel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-
-        .tp-ambient {
-          position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
-          width: 900px; height: 500px;
-          background: radial-gradient(ellipse, rgba(0,80,180,0.07) 0%, transparent 70%);
-          pointer-events: none; z-index: 0;
-        }
-
+        .tp-ambient { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 900px; height: 500px; background: radial-gradient(ellipse, rgba(0,80,180,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
         .tp-empty { text-align: center; padding: 80px 20px; }
-        .tp-empty-icon {
-          width: 80px; height: 80px; background: rgba(0,200,255,0.03); border: 1px solid rgba(0,200,255,0.08);
-          border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
-        }
+        .tp-empty-icon { width: 80px; height: 80px; background: rgba(0,200,255,0.03); border: 1px solid rgba(0,200,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         .tp-empty-icon.fav { background: rgba(255,200,0,0.03); border-color: rgba(255,200,0,0.12); }
-
-        .tp-clear-btn {
-          position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-          background: none; border: none; cursor: pointer; color: rgba(0,200,255,0.25); padding: 2px;
-          display: flex; align-items: center; transition: color 0.2s;
-        }
+        .tp-clear-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: rgba(0,200,255,0.25); padding: 2px; display: flex; align-items: center; transition: color 0.2s; }
         .tp-clear-btn:hover { color: #00c8ff; }
         .tp-divider { height: 1px; background: rgba(0,200,255,0.08); }
-
         .tp-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 40px; }
-        .tp-page-btn {
-          min-width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-          background: rgba(0,200,255,0.03); border: 1px solid rgba(0,200,255,0.1); border-radius: 6px;
-          color: #3a5a6a; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 600;
-          cursor: pointer; transition: all 0.18s; padding: 0 6px;
-        }
+        .tp-page-btn { min-width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(0,200,255,0.03); border: 1px solid rgba(0,200,255,0.1); border-radius: 6px; color: #3a5a6a; font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.18s; padding: 0 6px; }
         .tp-page-btn:hover:not(:disabled):not(.dots) { border-color: rgba(0,200,255,0.35); color: #00c8ff; background: rgba(0,200,255,0.07); box-shadow: 0 0 10px rgba(0,200,255,0.08); }
         .tp-page-btn.active { background: rgba(0,200,255,0.12); border-color: rgba(0,200,255,0.5); color: #00c8ff; font-weight: 700; box-shadow: 0 0 12px rgba(0,200,255,0.12); }
         .tp-page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
@@ -306,10 +367,12 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         .tp-page-info { font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; color: rgba(0,200,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; text-align: center; margin-top: 12px; }
       `}</style>
 
+      {/* ── QR Modal integrado ── */}
+      <QRModal />
+
       <div className="tp-root">
         <div className="tp-ambient" />
 
-        {/* ── Header ── */}
         <header className="tp-header">
           <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0 12px', flexWrap: 'wrap' }}>
@@ -344,6 +407,9 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
                 <span className="tp-movies-dot" />
               </button>
 
+              {/* ── QR Remote button ── */}
+              <QRRemoteButton />
+
               {/* Filter toggle */}
               <button
                 className={`tp-filter-btn ${showFilters ? 'active' : ''}`}
@@ -357,10 +423,8 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
               </button>
             </div>
 
-            {/* Category pills + Favoritos */}
+            {/* Category pills */}
             <div className="tp-pill-bar" style={{ paddingBottom: 13 }}>
-
-              {/* ★ Favoritos — siempre primera */}
               <button
                 className={`tp-pill-fav ${showFavorites ? 'active' : ''}`}
                 onClick={handleToggleFavorites}
@@ -371,9 +435,7 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
                   <span className="tp-pill-fav-count">{favoriteIds.length}</span>
                 )}
               </button>
-
               <div className="tp-pill-sep" />
-
               {categories.map(cat => (
                 <button
                   key={cat}
@@ -493,5 +555,99 @@ export function ChannelList({ channels, onChannelSelect, onMoviesClick }: Channe
         </div>
       </div>
     </div>
+  );
+}
+
+// ── QR Modal (self-contained, no depende de QRRemote.tsx) ──────────────────
+const REMOTE_URL = 'https://techphantomarg.netlify.app/remote';
+const QR_IMG = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=png&color=00c8ff&bgcolor=060608&qzone=1&data=${encodeURIComponent(REMOTE_URL)}`;
+
+function QRModal() {
+  const [open, setOpen]     = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(REMOTE_URL); } catch {}
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Exponer open al botón del header via evento customizado
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener('tp:openQR', handler);
+    return () => window.removeEventListener('tp:openQR', handler);
+  }, []);
+
+  if (!open) return null;
+
+  return (
+    <div className="tp-qr-overlay" onClick={() => setOpen(false)}>
+      <div className="tp-qr-card" onClick={e => e.stopPropagation()}>
+        <button className="tp-qr-close" onClick={() => setOpen(false)}>✕</button>
+
+        <div style={{ textAlign: 'center' }}>
+          <div className="tp-qr-title"><span>Control</span> Remoto</div>
+          <div className="tp-qr-sub">Escaneá con tu celular</div>
+        </div>
+
+        <div className="tp-qr-frame">
+          <div className="tp-qr-corner tp-qr-c-tl" />
+          <div className="tp-qr-corner tp-qr-c-tr" />
+          <div className="tp-qr-corner tp-qr-c-bl" />
+          <div className="tp-qr-corner tp-qr-c-br" />
+          <div className={`tp-qr-shimmer ${loaded ? 'done' : ''}`} />
+          <img
+            src={QR_IMG} alt="QR Control Remoto"
+            className={`tp-qr-img ${loaded ? 'rdy' : ''}`}
+            onLoad={() => setLoaded(true)}
+          />
+        </div>
+
+        <div className="tp-qr-hint">
+          <span className="tp-qr-hint-emoji">📱</span>
+          Apuntá la cámara al código QR
+        </div>
+
+        <div className="tp-qr-stats">
+          <div className="tp-qr-stat">
+            <div className="tp-qr-stat-n">60+</div>
+            <div className="tp-qr-stat-l">Canales</div>
+          </div>
+          <div className="tp-qr-stat-sep" />
+          <div className="tp-qr-stat">
+            <div className="tp-qr-stat-n">8</div>
+            <div className="tp-qr-stat-l">Categorías</div>
+          </div>
+          <div className="tp-qr-stat-sep" />
+          <div className="tp-qr-stat">
+            <div className="tp-qr-stat-n">HD</div>
+            <div className="tp-qr-stat-l">Calidad</div>
+          </div>
+        </div>
+
+        <div className="tp-qr-divider" />
+
+        <div className="tp-qr-url-row">
+          <span className="tp-qr-url">{REMOTE_URL}</span>
+          <button className={`tp-qr-copy ${copied ? 'ok' : ''}`} onClick={copy}>
+            {copied ? '✓ Copiado' : 'Copiar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Botón que dispara el modal via evento ─────────────────────────────────
+function QRRemoteButton() {
+  return (
+    <button
+      className="tp-qr-btn"
+      onClick={() => window.dispatchEvent(new Event('tp:openQR'))}
+    >
+      <span className="tp-qr-icon">📱</span>
+      Control Remoto
+    </button>
   );
 }

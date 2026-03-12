@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Channel } from '../types';
-import { ArrowLeft, Tv, Film, AlertCircle, MapPin, ChevronLeft, ChevronRight, ExternalLink, Star, Clock } from 'lucide-react';
+import { ArrowLeft, Tv, Film, AlertCircle, MapPin, ChevronLeft, ChevronRight, ExternalLink, Star, Clock, Maximize } from 'lucide-react';
 import { Footer } from './Footer';
 
 interface VideoPlayerProps {
@@ -550,12 +550,10 @@ const PJ_STREAMS: Record<string, { label: string; url: string }[]> = {
 };
 
 function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
-  // ── Canales de pelisjuanita (pj:slug) ─────────────────────────────────────
   if (streamUrl.startsWith('pj:')) {
     const slug = streamUrl.slice(3);
     const opts = PJ_STREAMS[slug];
     if (opts && opts.length > 0) return opts;
-    // fallback genérico si no hay entradas para el slug
     return [{ label: 'Servidor 1', url: `${PJ_BASE}cvatt.html?get=${slug}` }];
   }
 
@@ -566,7 +564,6 @@ function getStreamOptions(streamUrl: string): { label: string; url: string }[] {
   return [{ label: 'Principal', url: streamUrl }];
 }
 
-// Dominios que bloquean embedding
 const BLOCKED_DOMAINS = [
   'americatv.com.ar',
   'c5n.com',
@@ -580,6 +577,7 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
   const [activeStream, setActiveStream] = useState(0);
   const [loading, setLoading] = useState(true);
   const [blocked, setBlocked] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('tv_favorites') || '[]'); } catch { return []; }
@@ -657,6 +655,20 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
 
   const handleChannelChange = (ch: Channel) => { setActiveStream(0); onChannelChange(ch); };
   const openInTab = () => window.open(currentUrl, '_blank', 'noopener,noreferrer');
+
+  const handleFullscreen = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    if (iframe.requestFullscreen) {
+      iframe.requestFullscreen();
+    } else if ((iframe as any).webkitRequestFullscreen) {
+      (iframe as any).webkitRequestFullscreen();
+    } else if ((iframe as any).mozRequestFullScreen) {
+      (iframe as any).mozRequestFullScreen();
+    } else if ((iframe as any).msRequestFullscreen) {
+      (iframe as any).msRequestFullscreen();
+    }
+  };
 
   return (
     <>
@@ -824,30 +836,30 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
           margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
         }
         .vp-servers-label {
-          font-size: 0.72rem; color: rgba(0,200,255,0.5); font-weight: 700;
+          font-size: 0.72rem; color: #ffffff; font-weight: 700;
           text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
           font-family: 'Rajdhani', sans-serif;
         }
         .vp-server-btns { display: flex; gap: 8px; flex-wrap: wrap; }
         .vp-server-btn {
           padding: 6px 16px; border-radius: 4px;
-          border: 1px solid rgba(0,200,255,0.15);
-          background: rgba(0,200,255,0.04);
-          color: rgba(0,200,255,0.55);
-          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 600;
+          border: 1px solid rgba(255,255,255,0.2);
+          background: rgba(255,255,255,0.06);
+          color: #ffffff;
+          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700;
           letter-spacing: 0.06em;
           cursor: pointer; transition: all 0.18s; white-space: nowrap;
         }
         .vp-server-btn:hover {
-          border-color: rgba(0,200,255,0.35);
-          color: #90c8e0;
-          background: rgba(0,200,255,0.07);
+          border-color: rgba(255,255,255,0.45);
+          color: #ffffff;
+          background: rgba(255,255,255,0.12);
         }
         .vp-server-btn.active {
-          background: rgba(0,200,255,0.12);
-          border-color: rgba(0,200,255,0.5);
-          color: #00c8ff;
-          box-shadow: 0 0 10px rgba(0,200,255,0.1);
+          background: rgba(0,200,255,0.18);
+          border-color: rgba(0,200,255,0.7);
+          color: #ffffff;
+          box-shadow: 0 0 12px rgba(0,200,255,0.2);
         }
         .vp-info {
           margin-top: 20px;
@@ -894,22 +906,38 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
         /* ── Favorito ── */
         .vp-fav-btn {
           display: flex; align-items: center; gap: 6px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 4px; color: #6a8a9a;
-          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 600;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 4px; color: #ffffff;
+          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700;
           letter-spacing: 0.05em; padding: 6px 14px;
           cursor: pointer; transition: all 0.2s; white-space: nowrap; margin-left: auto;
         }
         .vp-fav-btn:hover {
-          background: rgba(255,200,0,0.06);
-          border-color: rgba(255,200,0,0.25);
+          background: rgba(255,200,0,0.1);
+          border-color: rgba(255,200,0,0.4);
           color: #ffc800;
         }
         .vp-fav-btn.fav-active {
-          background: rgba(255,200,0,0.08);
-          border-color: rgba(255,200,0,0.35);
+          background: rgba(255,200,0,0.12);
+          border-color: rgba(255,200,0,0.5);
           color: #ffc800;
+        }
+
+        /* ── Pantalla completa ── */
+        .vp-fs-btn {
+          display: flex; align-items: center; gap: 6px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 4px; color: #ffffff;
+          font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 700;
+          letter-spacing: 0.05em; padding: 6px 14px;
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .vp-fs-btn:hover {
+          background: rgba(0,200,255,0.1);
+          border-color: rgba(0,200,255,0.4);
+          color: #00c8ff;
         }
 
         /* ── Recientes ── */
@@ -994,9 +1022,10 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
               )}
               <iframe
                 key={`${channel.id}-${activeStream}`}
+                ref={iframeRef}
                 src={currentUrl}
                 allowFullScreen
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 onLoad={() => setLoading(false)}
                 title={channel.name}
               />
@@ -1028,6 +1057,14 @@ export function VideoPlayer({ channel, channels, onBack, onChannelChange }: Vide
               >
                 <Star size={13} fill={isFavorite ? 'currentColor' : 'none'} />
                 {isFavorite ? 'En favoritos' : 'Agregar a favoritos'}
+              </button>
+              <button
+                className="vp-fs-btn"
+                onClick={handleFullscreen}
+                title="Pantalla completa"
+              >
+                <Maximize size={13} />
+                Pantalla completa
               </button>
             </div>
           )}
